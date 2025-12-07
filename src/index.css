@@ -1,0 +1,71 @@
+@import 'antd/dist/reset.css';
+@import 'tailwindcss';
+
+@tailwind utilities;
+
+*{
+  font-family: system-ui;
+}
+
+:root {
+  --primary-color: #4478B9;
+  --secondary-color: #E2E8F0;
+}
+
+.scrollbar-hide {
+  overflow-y: auto;      
+  scrollbar-width: thin;    
+  scrollbar-color: transparent transparent;
+  -ms-overflow-style: auto; 
+  transition: all 0.3s ease-in-out;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  width: 0px; 
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 10px;
+  transition: background-color 0.3s ease-in-out, width 0.3s ease-in-out;
+}
+
+/* Mostrar scroll solo al hacer hover */
+.scrollbar-hide:hover {
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.scrollbar-hide:hover::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-hide:hover::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+}
+
+.ant-menu-item-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100%;
+   margin-left: -3.7px !important;
+}
+
+.ant-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ant-image-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center;
+  border-radius: 0.75rem; /* coincide con rounded-xl */
+}
+
