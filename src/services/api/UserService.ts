@@ -1,11 +1,13 @@
 import type { AxiosRequestConfig } from 'axios'
 import ApiService from '../ApiService'
-import User from '@models/api/User'
-import PaginationResponse from '@models/Pagination'
+import BaseService from '@/models/api/BaseService'
+import PaginationResponse from '@/models/api/Pagination'
+import User from '@/models/api/entities/User'
+
 
 type Entity = User
 
-class UserService {
+class UserService implements BaseService<Entity> {
     private static instance: UserService
     private api = ApiService.getInstance('/users')
 

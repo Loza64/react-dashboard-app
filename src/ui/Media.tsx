@@ -1,5 +1,5 @@
+import UploadMedia from '@/models/photos/UploadMedia'
 import { CloseOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons'
-import UploadMedia from '@models/photos/UploadMedia'
 import type { UploadFile } from 'antd'
 import { Image as AntdImage, Form, message } from 'antd'
 import Dragger from 'antd/es/upload/Dragger'

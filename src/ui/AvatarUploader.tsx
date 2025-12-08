@@ -1,6 +1,6 @@
 'use client'
 
-import AvatarUpload from '@models/photos/AvatarUpload'
+import AvatarUpload from '@/models/photos/AvatarUpload'
 import { Button, Upload, message } from 'antd'
 import type { RcFile } from 'antd/es/upload/interface'
 import { useMemo } from 'react'
