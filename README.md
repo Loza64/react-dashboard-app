@@ -1,73 +1,54 @@
-# React + TypeScript + Vite
+# 📊 Dashboard React + TypeScript
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es un **Dashboard administrativo moderno**, construido con tecnologías actuales y pensado para escalar de forma segura y eficiente.
 
-Currently, two official plugins are available:
+Incluye:
+- Manejo de **roles y permisos dinámicos** basados en los datos provenientes del backend.
+- Autenticación con JWT.
+- Integración completa con Ant Design, TailwindCSS y Context API.
+- Arquitectura limpia y optimizada con Vite + React 19.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🚀 Tecnologías Principales
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+### 🖥 Frontend
+- ⚛️ **React 19**
+- 🟦 **TypeScript**
+- 🎨 **Ant Design (UI)**
+- 🎨 **TailwindCSS**
+- 🌐 **Axios** (HTTP Client)
+- 🧠 **Context API** (Estado global)
+- ⚡ **Vite** (Empaquetado rápido)
 
-## Expanding the ESLint configuration
+### 🔐 Características del Dashboard
+- Sistema de **inicio de sesión** con JWT.
+- **Roles de usuario** cargados dinámicamente desde la base de datos.
+- **Acceso a rutas condicionado** según permisos del usuario.
+- Componentes reutilizables y arquitectura modular.
+- Integración con servicios API centralizados.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🖥️ Backend
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Este dashboard está conectado a un backend en **Spring Boot**, el cual provee autenticación, autorización y CRUDs.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+📦 **Repositorio del backend:**  
+👉 https://github.com/Loza64/spring-app-template.git
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+El backend incluye:
+- 🔐 Autenticación JWT
+- 👥 Gestión de Roles y Permisos desde la base de datos
+- 📚 Estructura escalable por módulos
+- 🛠 CRUD base listo para extender
+- 📄 Documentación en `README.md`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🔧 Variables de Entorno
+
+Crea un archivo `.env` en la raíz del proyecto:
+
+```env
+VITE_API_URL=http://localhost:4000

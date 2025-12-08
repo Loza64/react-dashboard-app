@@ -4,10 +4,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import { SessionContext } from "../SessionContext";
 import { AuthService } from "@/services/api/AuthSservice";
-import User from "@/models/api/User";
+import User from "@/models/api/entities/User";
 import errorResponse from "@/utils/errorResponse";
-import { getToken, removeToken } from "@/services/token";
+import { getToken, removeToken, setToken } from "@/services/token";
 import SessionType from "@/models/context/SessionType";
+import SessionResponse from "@/models/api/SessionResponse";
 
 const service = AuthService.getInstance();
 
@@ -19,41 +20,19 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const login = useCallback(
-        async (username: string, password: string) => {
-            try {
-                const result = await service.login(username, password);
-                if (result) {
-                    setUser(result);
-                    messageApi.success(`Bienvenido, ${result.username || "usuario"} 👋`);
-                    navigate("/", { replace: true });
-                }
-                return result;
-            } catch (error) {
-                errorResponse(error)
-                return null;
-            }
-        },
-        [messageApi, navigate]
-    );
+    const login = useCallback(async (username: string, password: string) => {
+        return await service.login(username, password);
+    }, []);
 
-    const signup = useCallback(
-        async (payload: User) => {
-            try {
-                const result = await service.signUp(payload);
-                if (result) {
-                    setUser(result);
-                    messageApi.success("Registro exitoso 🎉");
-                    navigate("/", { replace: true });
-                }
-                return result;
-            } catch (error) {
-                errorResponse(error)
-                return null;
-            }
-        },
-        [messageApi, navigate]
-    );
+    const signup = useCallback(async (payload: User) => {
+        return await service.signUp(payload);
+    }, []);
+
+    const saveSession = useCallback(({ token, data }: SessionResponse) => {
+        setUser(data)
+        setToken(token)
+        navigate("/dashboard")
+    }, [navigate])
 
     const logout = useCallback(() => {
         removeToken();
@@ -68,7 +47,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
             if (response) setUser(response);
             else throw new Error("Perfil inválido");
         } catch (error) {
-            errorResponse(error)
+            errorResponse({ error })
             setUser(undefined);
             removeToken();
             if (location.pathname !== "/login") navigate("/login", { replace: true });
@@ -91,6 +70,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
         login,
         signup,
         logout,
+        saveSession,
         loadingSession,
     };
 

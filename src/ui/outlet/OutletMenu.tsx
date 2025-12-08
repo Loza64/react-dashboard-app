@@ -60,7 +60,7 @@ export default function OutletMenu({
       {!isMobile && (
         <>
           <div
-            className={`fixed top-4 z-500 -translate-x-full transition-all duration-300 ease-out  ${collapsed ? 'left-[110px]' : 'left-[280px]'} hidden xl:block`}>
+            className={`fixed top-5 z-500 -translate-x-full transition-all duration-300 ease-out  ${collapsed ? 'left-[95px]' : 'left-[265px]'} hidden xl:block`}>
             <button
               onClick={() => handleMenuClick('toggle')}
               className="flex items-center justify-center rounded-full bg-white p-1.5 text-primary shadow-md transition-transform duration-150 hover:bg-gray-50 active:scale-95">
@@ -72,7 +72,7 @@ export default function OutletMenu({
             </button>
           </div>
 
-          <aside className="relative flex h-dvh px-2">
+          <aside className="relative flex h-dvh">
             <Sider
               collapsible
               collapsed={collapsed}
@@ -80,7 +80,7 @@ export default function OutletMenu({
               width={250}
               collapsedWidth={80}
               trigger={null}
-              className="flex h-full flex-col bg-white shadow-sm transition-all duration-300 border-none!">
+            >
               <div
                 className={`flex items-center gap-3 p-4 transition-all duration-300 ${collapsed ? 'justify-center' : ''
                   }`}>
@@ -113,7 +113,7 @@ export default function OutletMenu({
                     <Tag
                       className="mt-1 w-fit text-xs"
                       color={role ? 'green' : 'red'}>
-                      {role?.name || 'unknown'}
+                      {role?.name.toLocaleLowerCase() || 'unknown'}
                     </Tag>
                   </div>
                 )}
@@ -134,7 +134,6 @@ export default function OutletMenu({
                     navigate(key, { replace: false })
                   }}
                   inlineCollapsed={collapsed}
-                  className="border-none font-bold"
                   style={{ border: 'none' }}
                 />
               </div>

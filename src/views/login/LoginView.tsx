@@ -1,6 +1,8 @@
 
 import { useSession } from '@/hooks/useSession'
-import User from '@/models/api/User'
+import ErrorResponse from '@/models/api/ErrorResponse'
+import User from '@/models/api/entities/User'
+import errorResponse from '@/utils/errorResponse'
 import { Button, Form, Input, message, Tabs } from 'antd'
 import { useState } from 'react'
 
@@ -19,23 +21,26 @@ interface SignUpProps {
 }
 
 export default function AuthView() {
-    const { login, signup } = useSession()
+
+    const { login, signup, saveSession } = useSession()
     const [loginForm] = Form.useForm<LoginProps>()
     const [signUpForm] = Form.useForm<SignUpProps>()
     const [loading, setLoading] = useState(false)
+    const [errorLogin, setErrorLogin] = useState<ErrorResponse>()
+    const [errorSignUp, setErrorSignUp] = useState<ErrorResponse>()
 
     const handleLogin = async (values: LoginProps) => {
         setLoading(true)
+        setErrorLogin(undefined)
         try {
-            const result: User | null = await login(values.username.trim(), values.password)
-            if (result) {
-                message.success(`Bienvenido, ${result.username} 🎉`)
-            } else {
-                message.error('Usuario o contraseña incorrectos.')
+            const response = await login(values.username.trim(), values.password)
+            if (response) {
+                loginForm.resetFields()
+                saveSession(response)
             }
         } catch (error: unknown) {
-            if (error instanceof Error) message.error(error.message)
-            else message.error('Error al iniciar sesión. Intenta nuevamente.')
+            const response = errorResponse({ error })
+            setErrorLogin(response)
         } finally {
             setLoading(false)
         }
@@ -47,6 +52,7 @@ export default function AuthView() {
             return
         }
 
+        setErrorSignUp(undefined)
         setLoading(true)
         try {
             const payload: User = {
@@ -58,14 +64,14 @@ export default function AuthView() {
             }
             const result = await signup(payload)
             if (result) {
-                message.success(`Cuenta creada correctamente. Bienvenido, ${result.username}! 🎉`)
                 signUpForm.resetFields()
+                saveSession(result)
             } else {
                 message.error('Error al crear la cuenta.')
             }
         } catch (error: unknown) {
-            if (error instanceof Error) message.error(error.message)
-            else message.error('Error al registrar la cuenta. Intenta nuevamente.')
+            const response = errorResponse({ error })
+            setErrorSignUp(response)
         } finally {
             setLoading(false)
         }
@@ -73,12 +79,16 @@ export default function AuthView() {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-100">
-            <div className="flex w-full max-w-5xl overflow-hidden rounded-xl bg-white shadow-lg md:flex-row flex-col">
-                {/* Formulario */}
+            <div className="flex w-full max-w-4xl mx-5 overflow-hidden rounded-xl bg-white shadow-lg md:flex-row flex-col min-h-[60dvh]">
                 <div className="flex w-full flex-col justify-center p-6 md:w-1/2">
                     <Tabs defaultActiveKey="login" centered>
                         <Tabs.TabPane tab="Iniciar sesión" key="login">
-                            <Form<LoginProps> form={loginForm} layout="vertical" onFinish={handleLogin} className="w-full">
+                            <Form<LoginProps>
+                                form={loginForm}
+                                layout="vertical"
+                                onFinish={handleLogin}
+                                className="w-full"
+                            >
                                 <Form.Item
                                     label="Usuario"
                                     name="username"
@@ -96,7 +106,12 @@ export default function AuthView() {
                                 </Form.Item>
 
                                 <Form.Item>
-                                    <Button type="primary" htmlType="submit" loading={loading} className="w-full">
+                                    <Button
+                                        type="primary"
+                                        htmlType="submit"
+                                        loading={loading}
+                                        className={`w-full  font-bold! transform ${errorLogin ? 'error-move' : ''}`}
+                                    >
                                         Iniciar sesión
                                     </Button>
                                 </Form.Item>
@@ -140,24 +155,28 @@ export default function AuthView() {
                                     <Input placeholder="correo@ejemplo.com" />
                                 </Form.Item>
 
-                                <Form.Item
-                                    label="Contraseña"
-                                    name="password"
-                                    rules={[{ required: true, message: 'Por favor ingresa tu contraseña' }]}
-                                >
-                                    <Input.Password placeholder="Contraseña" />
-                                </Form.Item>
+                                <div className='flex gap-1 w-full m-0 items-center'>
+                                    <Form.Item
+                                        label="Contraseña"
+                                        name="password"
+                                        rules={[{ required: true, message: 'Por favor ingresa tu contraseña' }]}
+                                        className='w-full!'
+                                    >
+                                        <Input.Password placeholder="Contraseña" />
+                                    </Form.Item>
 
-                                <Form.Item
-                                    label="Confirmar contraseña"
-                                    name="confirmPassword"
-                                    rules={[{ required: true, message: 'Confirma tu contraseña' }]}
-                                >
-                                    <Input.Password placeholder="Confirmar contraseña" />
-                                </Form.Item>
+                                    <Form.Item
+                                        label="Confirmar contraseña"
+                                        name="confirmPassword"
+                                        rules={[{ required: true, message: 'Confirma tu contraseña' }]}
+                                        className='w-full!'
+                                    >
+                                        <Input.Password placeholder="Confirmar contraseña" />
+                                    </Form.Item>
+                                </div>
 
                                 <Form.Item>
-                                    <Button type="primary" htmlType="submit" loading={loading} className="w-full">
+                                    <Button type="primary" htmlType="submit" loading={loading} className={`w-full  font-bold! transform ${errorSignUp ? 'error-move' : ''}`}>
                                         Registrarse
                                     </Button>
                                 </Form.Item>
@@ -165,8 +184,6 @@ export default function AuthView() {
                         </Tabs.TabPane>
                     </Tabs>
                 </div>
-
-                {/* Imagen */}
                 <div className="hidden md:block md:w-1/2">
                     <img src={''} alt="Login" className="h-full w-full object-cover" />
                 </div>

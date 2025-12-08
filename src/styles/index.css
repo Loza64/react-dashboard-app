@@ -1,0 +1,37 @@
+
+
+@import 'antd/dist/reset.css';
+@import 'tailwindcss';
+@import './components/and-components';
+@import './components/scroll.css';
+@import './components/animations.css';
+
+:root {
+  --primary-color: oklch(64.6% 0.222 41.116);
+  --secondary-color: oklch(70.5% 0.213 47.604);
+}
+
+*{
+  font-family: system-ui;
+}
+
+
+.text-primary{
+  @apply text-orange-600
+}
+
+
+.text-secondary{
+  @apply text-orange-400
+}
+
+.bg-primary{
+  @apply bg-orange-600
+}
+
+.bg-secondary{
+  @apply bg-orange-500
+}
+
+
+

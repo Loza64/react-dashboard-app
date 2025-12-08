@@ -64,7 +64,7 @@ export default function OutletContainer({
 
       <div className="flex min-h-screen w-full flex-col overflow-hidden bg-white transition-all duration-200 ease-in-out">
         {!isMobile && (
-          <div className="flex shrink-0 items-center justify-between gap-4 bg-white px-9 py-4">
+          <div className="flex shrink-0 items-center justify-between gap-4  px-9 py-4">
             <div className="flex flex-col text-primary">
               <span className="text-3xl font-extrabold">{pageInfo.name}</span>
             </div>
@@ -73,7 +73,7 @@ export default function OutletContainer({
               <Input
                 placeholder="Buscar"
                 prefix={<SearchOutlined className="text-blue-500" />}
-                className="w-full! max-w-80 rounded-lg! border-none  bg-blue-50! px-4! font-bold text-blue-500! placeholder:text-blue-400 focus:outline-none"
+                className="w-full! max-w-80 rounded-lg"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />

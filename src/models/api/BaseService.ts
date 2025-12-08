@@ -1,5 +1,5 @@
 import type { AxiosRequestConfig } from 'axios'
-import PaginationResponse from '../Pagination';
+import PaginationResponse from './Pagination';
 
 export default abstract class BaseService<Entity> {
     abstract findAll(config?: AxiosRequestConfig, endpoint?: string): Promise<PaginationResponse<Entity>>

@@ -1,5 +1,5 @@
 import { useApiService } from "@/hooks/useApiService";
-import User from "@/models/api/User";
+import User from "@/models/api/entities/User";
 import userService from "@/services/api/UserService";
 import { Table, Button, Space } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
@@ -62,7 +62,6 @@ export default function DashboardView() {
                 }}
                 onChange={handleTableChange}
             />
-
         </div>
     );
 }

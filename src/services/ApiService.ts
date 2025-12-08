@@ -1,7 +1,8 @@
 import axios, { AxiosHeaders, type AxiosInstance, type AxiosRequestConfig } from "axios"
 import { getToken } from "./token"
-import type User from "../models/api/User"
-import type PaginationResponse from "../models/Pagination"
+import type User from "../models/api/entities/User"
+import type PaginationResponse from "../models/api/Pagination"
+import SessionResponse from "@/models/api/SessionResponse"
 
 export default class ApiService {
 
@@ -63,13 +64,13 @@ export default class ApiService {
         await this.axiosInstance.delete(url)
     }
 
-    public async login({ username, password }: { username: string; password: string }): Promise<{ token: string; data: User }> {
-        const res = await this.axiosInstance.post<{ token: string; data: User }>('/auth/login', { username, password })
+    public async login({ username, password }: { username: string; password: string }): Promise<SessionResponse> {
+        const res = await this.axiosInstance.post<SessionResponse>('/auth/login', { username, password })
         return res.data
     }
 
-    public async signUp({ payload }: { payload: User }): Promise<{ token: string; data: User }> {
-        const res = await this.axiosInstance.post<{ token: string; data: User }>('/auth/signup', payload)
+    public async signUp({ payload }: { payload: User }): Promise<SessionResponse> {
+        const res = await this.axiosInstance.post<SessionResponse>('/auth/signup', payload)
         return res.data
     }
 

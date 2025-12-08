@@ -1,6 +1,5 @@
-import type User from "../../models/api/User"
+import type User from "../../models/api/entities/User"
 import ApiService from "../ApiService"
-import { setToken } from "../token"
 
 export class AuthService {
     private static intance: AuthService
@@ -19,23 +18,11 @@ export class AuthService {
     }
 
     public async login(username: string, password: string) {
-        const response = await this.authServide.login({ username, password })
-        if (response) {
-            setToken(response.token)
-            return response.data
-        } else {
-            return null
-        }
+        return await this.authServide.login({ username, password })
     }
 
     public async signUp(payload: User) {
-        const response = await this.authServide.signUp({ payload })
-        if (response) {
-            setToken(response.token)
-            return response.data
-        } else {
-            return null
-        }
+        return await this.authServide.signUp({ payload })
     }
 
     public async profile() {

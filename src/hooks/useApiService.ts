@@ -1,5 +1,5 @@
 import BaseService from "@/models/api/BaseService";
-import PaginationResponse from "@/models/Pagination";
+import PaginationResponse from "@/models/api/Pagination";
 import { useState, useCallback, useEffect } from "react";
 import errorResponse from "src/utils/errorResponse";
 
@@ -28,8 +28,8 @@ export function useApiService<T extends object>({ service, initFetch, autoFetch,
         setLoadingState(true);
         try {
             return await fn();
-        } catch (err: unknown) {
-            errorResponse(err)
+        } catch (error: unknown) {
+            errorResponse({ error, alert: true })
         } finally {
             setLoadingState(false);
         }
