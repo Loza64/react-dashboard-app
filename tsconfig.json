@@ -1,35 +1,57 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "baseUrl": ".",
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": true,
     "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
+      "dom",
+      "dom.iterable",
+      "esnext"
     ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
+    "module": "esnext",
+    "incremental": true,
+    "verbatimModuleSyntax": true,
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+    },
+    "types": [
+      // "vite-plugin-svgr/client",
+      // "google.maps",
+      //  "node"
+    ],
+    "target": "ESNext",
     "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
     "jsx": "react-jsx",
-    "baseUrl": "./",
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
-    }
+    "jsxImportSource": "react"
   },
   "include": [
-    "src"
+    "**/*.d.ts",
+    "**/*.js",
+    "**/*.config.ts",
+    "**/*.config.js",
+    "**/*.config.cts",
+    "**/*.config.cjs",
+    "src/",
+    "vite.config.ts",
+    ".eslintrc.cjs"
   ],
   "exclude": [
-    "node_modules",
-    "dist"
+    "**/node_modules/**"
   ]
 }
