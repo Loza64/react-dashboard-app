@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
 import { antd } from './config/antd'
-import AppProvider from './context/providers/AppProvider'
+import { RecoilRoot } from 'recoil'
 
 dayjs.locale('es')
 
@@ -14,11 +14,11 @@ function App() {
   return (
     <>
       <ToastContainer />
-      <AppProvider>
+      <RecoilRoot>
         <ConfigProvider theme={antd} locale={esES}>
           <Routes />
         </ConfigProvider>
-      </AppProvider>
+      </RecoilRoot>
 
     </>
   )

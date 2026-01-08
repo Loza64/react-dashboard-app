@@ -1,4 +1,4 @@
-import UploadMedia from '@/models/photos/UploadMedia'
+import type UploadMedia from '@/models/photos/UploadMedia'
 import { CloseOutlined, InboxOutlined, PlusOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import { Image as AntdImage, Form, message } from 'antd'

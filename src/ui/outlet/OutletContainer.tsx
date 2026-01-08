@@ -7,9 +7,10 @@ import { useCallback, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import OutletMenu from './OutletMenu'
 import { useSession } from '@/hooks/useSession'
-import { isAuthorized, menu, Route } from '@/config/roles'
+import { isAuthorized, menu, type Route } from '@/config/roles'
 import ForbiddenView from '@/views/ForbiddenView'
-import { useAppContext } from '@/hooks/useAppContext'
+import useRecoil from '@/hooks/useRecoil'
+import { searchRecoil } from '@/constants/recoil'
 
 
 
@@ -20,7 +21,7 @@ export default function OutletContainer({
   children: React.ReactNode
   isMobile: boolean
 }) {
-  const { search, setSearch } = useAppContext()
+  const [search, setSearch] = useRecoil<string | undefined>(searchRecoil)
   const [collapsed, setCollapsed] = useState(true)
 
   const { user, loadingSession } = useSession()

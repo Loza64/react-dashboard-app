@@ -1,5 +1,5 @@
 import type User from "../api/entities/User"
-import SessionResponse from "../api/SessionResponse"
+import type SessionResponse from "../api/SessionResponse"
 
 export default interface SessionType {
     token?: string

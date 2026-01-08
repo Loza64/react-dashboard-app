@@ -1,5 +1,5 @@
 import BaseService from "@/models/api/BaseService";
-import PaginationResponse from "@/models/api/Pagination";
+import type PaginationResponse from "@/models/api/Pagination";
 import { useState, useCallback, useEffect } from "react";
 import errorResponse from "src/utils/errorResponse";
 
@@ -54,7 +54,7 @@ export function useApiService<T extends object>({ service, initFetch, autoFetch,
     );
 
     const create = useCallback(
-        async (payload: T) => mutate(async () => {
+        async (payload: T | FormData) => mutate(async () => {
             const res = await service.create(payload);
             if (autoFetch) await fetchList();
             return res;
@@ -63,7 +63,7 @@ export function useApiService<T extends object>({ service, initFetch, autoFetch,
     );
 
     const update = useCallback(
-        async (id: number, payload: Partial<T>) => mutate(async () => {
+        async (id: number, payload: Partial<T> | FormData) => mutate(async () => {
             const res = await service.update(id, payload);
             if (autoFetch) await fetchList();
             return res;

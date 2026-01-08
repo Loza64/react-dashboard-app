@@ -1,7 +1,7 @@
 
 import { useSession } from '@/hooks/useSession'
-import ErrorResponse from '@/models/api/ErrorResponse'
-import User from '@/models/api/entities/User'
+import type ErrorResponse from '@/models/api/ErrorResponse'
+import type User from '@/models/api/entities/User'
 import errorResponse from '@/utils/errorResponse'
 import { Button, Form, Input, message, Tabs } from 'antd'
 import { useState } from 'react'

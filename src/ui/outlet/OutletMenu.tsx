@@ -1,5 +1,6 @@
 import { menu } from '@/config/roles'
-import { useAppContext } from '@/hooks/useAppContext'
+import { searchRecoil } from '@/constants/recoil'
+import useRecoil from '@/hooks/useRecoil'
 import { useSession } from '@/hooks/useSession'
 import {
   CloseOutlined,
@@ -35,7 +36,7 @@ export default function OutletMenu({
   openMenu: () => void
   isMobile: boolean
 }) {
-  const { search, setSearch } = useAppContext()
+  const [search, setSearch] = useRecoil<string | undefined>(searchRecoil)
   const { user: profile, loadingSession, logout } = useSession()
   const navigate = useNavigate()
 

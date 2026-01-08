@@ -1,9 +1,8 @@
 import type { AxiosRequestConfig } from 'axios'
 import ApiService from '../ApiService'
 import BaseService from '@/models/api/BaseService'
-import PaginationResponse from '@/models/api/Pagination'
-import User from '@/models/api/entities/User'
-
+import type PaginationResponse from '@/models/api/Pagination'
+import type User from '@/models/api/entities/User'
 
 type Entity = User
 
@@ -28,11 +27,11 @@ class UserService implements BaseService<Entity> {
         return this.api.findById<Entity>({ id, endpoint })
     }
 
-    public async create(payload: Entity, endpoint?: string): Promise<Entity> {
+    public async create(payload: Entity | FormData, endpoint?: string): Promise<Entity> {
         return this.api.create<Entity>({ payload, endpoint })
     }
 
-    public async update(id: number, payload: Partial<Entity>, endpoint?: string): Promise<Entity> {
+    public async update(id: number, payload: Partial<Entity> | FormData, endpoint?: string): Promise<Entity> {
         return this.api.update<Entity>({ id, payload, endpoint })
     }
 

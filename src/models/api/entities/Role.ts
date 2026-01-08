@@ -1,5 +1,5 @@
-import { RoleName } from "src/config/roles"
-import Permissions from "./Permissions"
+import { type RoleName } from "src/config/roles"
+import type Permissions from "./Permissions"
 
 export default interface Role {
     id?: number

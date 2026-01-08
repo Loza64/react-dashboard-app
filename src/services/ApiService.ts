@@ -2,7 +2,7 @@ import axios, { AxiosHeaders, type AxiosInstance, type AxiosRequestConfig } from
 import { getToken } from "./token"
 import type User from "../models/api/entities/User"
 import type PaginationResponse from "../models/api/Pagination"
-import SessionResponse from "@/models/api/SessionResponse"
+import type SessionResponse from "@/models/api/SessionResponse"
 
 export default class ApiService {
 
@@ -19,6 +19,7 @@ export default class ApiService {
             headers: { 'Content-Type': 'application/json' },
         })
 
+        // Interceptor para agregar token automáticamente
         this.axiosInstance.interceptors.request.use((config) => {
             const token = getToken()
             if (token) {
@@ -35,6 +36,8 @@ export default class ApiService {
         return this.instances.get(endpoint)!
     }
 
+    // ----------------- CRUD -----------------
+
     public async findAll<T>({ endpoint, config }: { endpoint?: string, config?: AxiosRequestConfig } = {}): Promise<PaginationResponse<T>> {
         const url = endpoint || this.endpoint
         const res = await this.axiosInstance.get<PaginationResponse<T>>(url, config)
@@ -47,22 +50,42 @@ export default class ApiService {
         return res.data
     }
 
-    public async create<T>({ payload, endpoint }: { payload: T; endpoint?: string }): Promise<T> {
+    public async create<T>({ payload, endpoint, config }: { payload: T | FormData; endpoint?: string; config?: AxiosRequestConfig }): Promise<T> {
         const url = endpoint || this.endpoint
-        const res = await this.axiosInstance.post<T>(url, payload)
+        const res = await this.axiosInstance.post<T>(
+            url,
+            payload,
+            {
+                ...config,
+                headers: payload instanceof FormData
+                    ? config?.headers
+                    : { 'Content-Type': 'application/json', ...config?.headers }
+            }
+        )
         return res.data
     }
 
-    public async update<T>({ id, payload, endpoint }: { id: number; payload: Partial<T>; endpoint?: string }): Promise<T> {
+    public async update<T>({ id, payload, endpoint, config }: { id: number; payload: Partial<T> | FormData; endpoint?: string; config?: AxiosRequestConfig }): Promise<T> {
         const url = endpoint ? `${endpoint}/${id}` : `${this.endpoint}/${id}`
-        const res = await this.axiosInstance.put<T>(url, payload)
+        const res = await this.axiosInstance.put<T>(
+            url,
+            payload,
+            {
+                ...config,
+                headers: payload instanceof FormData
+                    ? config?.headers
+                    : { 'Content-Type': 'application/json', ...config?.headers }
+            }
+        )
         return res.data
     }
 
-    public async delete({ id, endpoint }: { id: number; endpoint?: string }): Promise<void> {
+    public async delete({ id, endpoint, config }: { id: number; endpoint?: string; config?: AxiosRequestConfig }): Promise<void> {
         const url = endpoint ? `${endpoint}/${id}` : `${this.endpoint}/${id}`
-        await this.axiosInstance.delete(url)
+        await this.axiosInstance.delete(url, config)
     }
+
+    // ----------------- Auth -----------------
 
     public async login({ username, password }: { username: string; password: string }): Promise<SessionResponse> {
         const res = await this.axiosInstance.post<SessionResponse>('/auth/login', { username, password })

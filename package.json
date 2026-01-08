@@ -14,15 +14,18 @@
     "@generouted/react-router": "^1.20.0",
     "antd": "^6.0.1",
     "axios": "^1.13.2",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.19",
     "es_ES": "link:antd/locale/es_ES",
     "lazy": "link:@generouted/react-router/lazy",
     "lucide-react": "^0.556.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.10.1",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "recoil": "^0.7.7",
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

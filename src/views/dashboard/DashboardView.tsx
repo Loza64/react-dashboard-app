@@ -1,5 +1,7 @@
+//import { searchRecoil } from "@/constants/recoil";
 import { useApiService } from "@/hooks/useApiService";
-import User from "@/models/api/entities/User";
+//import useRecoil from "@/hooks/useRecoil";
+import type User from "@/models/api/entities/User";
 import userService from "@/services/api/UserService";
 import { Table, Button, Space } from "antd";
 import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
@@ -17,6 +19,9 @@ export default function DashboardView() {
         autoFetch: true,
         initFetch: true
     });
+
+    //const [search] = useRecoil<string | undefined>(searchRecoil)
+    //console.log(search)
 
     const handleTableChange = (pagination: TablePaginationConfig) => {
         if (pagination.current && pagination.current - 1 !== params.page) {
