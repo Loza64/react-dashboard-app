@@ -3,9 +3,9 @@ import type { ThemeConfig } from 'antd';
 const baseBG = '#ffffff';
 const layoutBG = '#ffffff';
 
-const primaryColor = '#ea580c';    // orange-600
-const primaryHover = '#f97316';    // orange-500
-const secondaryColor = '#fb923c';  // orange-400
+const primaryColor = 'red';
+const primaryHover = 'red';
+const secondaryColor = 'orange';
 
 const textBase = '#1f2937';
 const borderColor = '#e5e7eb';

@@ -7,31 +7,35 @@
 @import './components/animations.css';
 
 :root {
-  --primary-color: oklch(64.6% 0.222 41.116);
-  --secondary-color: oklch(70.5% 0.213 47.604);
+  --primary-color: red;
+  --secondary-color: orange;
 }
 
 *{
   font-family: system-ui;
 }
 
-
-.text-primary{
-  @apply text-orange-600
+.border-primary {
+    border-color:  var(--primary-color);
 }
 
-
-.text-secondary{
-  @apply text-orange-400
+.text-primary {
+  color: var(--primary-color);
 }
 
-.bg-primary{
-  @apply bg-orange-600
+.text-secondary {
+  color: var(--secondary-color);
 }
 
-.bg-secondary{
-  @apply bg-orange-500
+.bg-primary {
+  background-color: var(--primary-color);
 }
 
+.bg-secondary {
+  background-color: var(--secondary-color);
+}
 
+.ant-select {
+  width: 100% !important;
+}
 
