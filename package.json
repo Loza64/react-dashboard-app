@@ -27,7 +27,7 @@
     "@ant-design/icons": "^6.1.0",
     "@generouted/react-router": "^1.20.0",
     "antd": "^6.0.1",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.19",
     "es_ES": "link:antd/locale/es_ES",
