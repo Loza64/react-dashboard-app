@@ -28,7 +28,7 @@
     "@generouted/react-router": "^1.20.0",
     "@tanstack/react-query": "^5.100.6",
     "antd": "^6.0.1",
-    "axios": "^1.13.2",
+    "axios": "^1.15.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.19",
     "es_ES": "link:antd/locale/es_ES",
