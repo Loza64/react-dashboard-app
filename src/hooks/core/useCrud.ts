@@ -5,6 +5,7 @@ import AbstractService, {
   FindByIdParams,
   FindBy,
   UpdateParams,
+  RestoreParams,
 } from '@/models/api/core/AbstractService'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -26,12 +27,7 @@ export default function useCrud<Entity extends BaseEntity>({
   const normalizedQueryKey = Array.isArray(queryKey) ? queryKey : [queryKey]
 
   const createMutation = useMutation({
-    mutationFn: (
-      params: CreateParams<Entity> & {
-        onUnauthorized?: () => void
-        onForbidden?: () => void
-      }
-    ) =>
+    mutationFn: (params: CreateParams<Entity>) =>
       service.create({
         ...params,
         config: {
@@ -45,12 +41,7 @@ export default function useCrud<Entity extends BaseEntity>({
   })
 
   const updateMutation = useMutation({
-    mutationFn: (
-      params: UpdateParams<Entity> & {
-        onUnauthorized?: () => void
-        onForbidden?: () => void
-      }
-    ) =>
+    mutationFn: (params: UpdateParams<Entity>) =>
       service.update({
         ...params,
         config: {
@@ -63,13 +54,8 @@ export default function useCrud<Entity extends BaseEntity>({
       queryClient.invalidateQueries({ queryKey: normalizedQueryKey }),
   })
 
-  const removeMutation = useMutation({
-    mutationFn: (
-      params: DeleteParams & {
-        onUnauthorized?: () => void
-        onForbidden?: () => void
-      }
-    ) =>
+  const deleteMutation = useMutation({
+    mutationFn: (params: DeleteParams) =>
       service.delete({
         ...params,
         config: {
@@ -82,12 +68,21 @@ export default function useCrud<Entity extends BaseEntity>({
       queryClient.invalidateQueries({ queryKey: normalizedQueryKey }),
   })
 
-  const useFindById = (
-    params: FindByIdParams & {
-      onUnauthorized?: () => void
-      onForbidden?: () => void
-    }
-  ) => {
+  const restoreMutation = useMutation({
+    mutationFn: (params: RestoreParams) =>
+      service.restore({
+        ...params,
+        config: {
+          ...params.config,
+          onForbidden: onForbidden ?? params.onForbidden,
+          onUnauthorized: onUnauthorized ?? params.onUnauthorized,
+        },
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: normalizedQueryKey }),
+  })
+
+  const useFindById = (params: FindByIdParams) => {
     return useQuery({
       queryKey: [queryKey, params.id],
       queryFn: () =>
@@ -124,15 +119,18 @@ export default function useCrud<Entity extends BaseEntity>({
   return {
     create: createMutation.mutateAsync,
     update: updateMutation.mutateAsync,
-    remove: removeMutation.mutateAsync,
+    delete: deleteMutation.mutateAsync,
+    restore: restoreMutation.mutateAsync,
 
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
-    isDeleting: removeMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+    isRestoring: deleteMutation.isPending,
 
     createError: createMutation.error,
     updateError: updateMutation.error,
-    deleteError: removeMutation.error,
+    deleteError: deleteMutation.error,
+    restoreError: restoreMutation.error,
 
     useFindById,
     useFindByPath: useFindBy,

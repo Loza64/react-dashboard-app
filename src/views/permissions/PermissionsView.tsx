@@ -18,7 +18,7 @@ export default function PermissionsView() {
   const [form] = Form.useForm()
 
   const [params, setParams] = useState({
-    page: 0,
+    page: 1,
     size: 15,
   })
 
@@ -36,7 +36,7 @@ export default function PermissionsView() {
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setParams((prev) => ({
       ...prev,
-      page: (pagination.current ?? 1) - 1,
+      page: (pagination.current ?? 1),
       size: pagination.pageSize ?? prev.size,
     }))
   }
@@ -119,7 +119,7 @@ export default function PermissionsView() {
         dataSource={response?.data}
         loading={isLoading}
         pagination={{
-          current: (response?.pagination.page ?? 0) + 1,
+          current: (response?.pagination.page ?? 1),
           pageSize: response?.pagination.pageSize,
           total: response?.pagination.total ?? 0,
           showSizeChanger: true,
@@ -136,7 +136,7 @@ export default function PermissionsView() {
         okText="Guardar"
         cancelText="Cancelar"
         confirmLoading={crud.isUpdating}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical">
           <Form.Item

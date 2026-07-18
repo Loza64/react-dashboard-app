@@ -2,10 +2,7 @@ import type { AxiosRequestConfig } from 'axios'
 import PaginationResponse from './PaginationResponse'
 import { BaseResponse } from './BaseResponse'
 
-interface RequestMeta {
-  onUnauthorized?: () => void
-  onForbidden?: () => void
-}
+interface RequestMeta { onUnauthorized?: () => void, onForbidden?: () => void }
 
 export type ServiceConfig = AxiosRequestConfig & RequestMeta
 
@@ -14,37 +11,44 @@ export interface ApiServiceParams {
   initPath?: string
   origin?: string
 }
-export interface FindAllParams {
+
+export interface FindAllParams extends RequestMeta {
   endpoint?: string
   config?: ServiceConfig
 }
 
-export interface FindByIdParams {
+export interface FindByIdParams extends RequestMeta {
   id?: number
   endpoint?: string
   config?: ServiceConfig
 }
 
-export interface FindBy {
+export interface FindBy extends RequestMeta {
   endpoint?: string
   path: string
   config?: ServiceConfig
 }
 
-export interface CreateParams<Entity> {
+export interface CreateParams<Entity> extends RequestMeta {
   payload: Entity | FormData
   endpoint?: string
   config?: ServiceConfig
 }
 
-export interface UpdateParams<Entity> {
+export interface UpdateParams<Entity> extends RequestMeta {
   id: string | number
   payload: Partial<Entity> | FormData
   endpoint?: string
   config?: ServiceConfig
 }
 
-export interface DeleteParams {
+export interface DeleteParams extends RequestMeta {
+  id: string | number
+  endpoint?: string
+  config?: ServiceConfig
+}
+
+export interface RestoreParams extends RequestMeta {
   id: string | number
   endpoint?: string
   config?: ServiceConfig
@@ -57,4 +61,5 @@ export default abstract class AbstractService<Entity> {
   abstract create(params: CreateParams<Entity>): Promise<BaseResponse<Entity>>
   abstract update(params: UpdateParams<Entity>): Promise<BaseResponse<Entity>>
   abstract delete(params: DeleteParams): Promise<void>
+  abstract restore(params: RestoreParams): Promise<void>
 }

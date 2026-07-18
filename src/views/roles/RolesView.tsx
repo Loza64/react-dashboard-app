@@ -1,20 +1,28 @@
 import { Button, Form, Input, Modal, Select, Space, Table } from 'antd'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type Role from '@/models/api/entities/Role'
 import type Permissions from '@/models/api/entities/Permissions'
 import { queryKeys } from '@/lib/queryClient'
 import { roleService, permissionService } from '@/services/api'
 import { useFindAll } from '@/hooks/core/useFindAll'
 import useCrud from '@/hooks/core/useCrud'
+import { useSession } from '@/hooks/useSession'
 
 export default function RolesView() {
+
+  const { profile } = useSession()
+
+  const [editing, setEditing] = useState<number>()
+  const [open, setOpen] = useState(false)
+  const [form] = Form.useForm()
+
   const [params, setParams] = useState<Record<string, unknown>>({
-    page: 0,
+    page: 1,
     size: 15,
   })
 
-  const { data: response, isLoading } = useFindAll<Role>({
+  const { data: response, isLoading: isLoadingList } = useFindAll<Role>({
     queryKey: queryKeys.roles,
     service: roleService,
     queryParams: params,
@@ -31,31 +39,34 @@ export default function RolesView() {
     queryKey: queryKeys.roles,
   })
 
-  const [editing, setEditing] = useState<Role | null>(null)
-  const [open, setOpen] = useState(false)
+  const { data, isLoading: isLoadingData } = crud.useFindById({ id: editing })
 
-  const [form] = Form.useForm()
+  useEffect(() => {
+    if (open && editing && data) {
+      form.setFieldsValue({
+        ...data,
+        permissions: data.permissions?.map((p) => p.id),
+      })
+    }
+  }, [data, editing, open, form])
 
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setParams((prev) => ({
       ...prev,
-      page: (pagination.current ?? 1) - 1,
+      page: (pagination.current ?? 1),
       size: pagination.pageSize ?? prev.size,
     }))
   }
 
   const openCreate = () => {
-    setEditing(null)
+    setEditing(undefined)
     form.resetFields()
     setOpen(true)
   }
 
-  const openEdit = (role: Role) => {
+  const openEdit = (role: number) => {
+    form.resetFields()
     setEditing(role)
-    form.setFieldsValue({
-      name: role.name,
-      permissions: role.permissions?.map((p: Permissions) => p.id) ?? [],
-    })
     setOpen(true)
   }
 
@@ -67,7 +78,7 @@ export default function RolesView() {
     }
 
     if (editing) {
-      await crud.update({ id: editing.id!.toString(), payload })
+      await crud.update({ id: editing, payload })
     } else {
       await crud.create({ payload })
     }
@@ -83,10 +94,12 @@ export default function RolesView() {
       title: 'Acciones',
       key: 'actions',
       align: 'center',
-      render: (_text, record) =>
-        record.name !== 'ADMIN' && (
+      render: (_text, record) => {
+        if (record.id === 1) return null
+        if (Number(record!.id) < Number(profile?.role!.id)) return null
+        return (
           <Space>
-            <Button type="link" onClick={() => openEdit(record)}>
+            <Button type="link" onClick={() => openEdit(Number(record.id!))}>
               Editar
             </Button>
             <Button
@@ -95,22 +108,30 @@ export default function RolesView() {
               onClick={async () =>
                 await crud.update({
                   id: record.id!,
-                  payload: { ...record, active: !record.active },
+                  payload: {
+                    ...record,
+                    active: !record.active,
+                    createdAt: undefined,
+                    deletedAt: undefined,
+                    updatedAt: undefined,
+                    id: undefined
+                  },
                 })
               }
             >
               {record.active ? 'Desactivar' : 'Activar'}
             </Button>
           </Space>
-        ),
+        )
+      }
+
     },
   ]
 
-  const permissionsOptions = permissionsResponse?.data?.map(
-    (p: Permissions) => ({
-      label: p.title ?? `${p.method ?? ''} ${p.path ?? ''}`,
-      value: p.id,
-    })
+  const permissionsOptions = permissionsResponse?.data?.map((p: Permissions) => ({
+    label: p.title ?? `${p.method ?? ''} ${p.path ?? ''}`,
+    value: p.id
+  })
   )
 
   return (
@@ -124,10 +145,10 @@ export default function RolesView() {
       <Table<Role>
         columns={columns}
         dataSource={response?.data}
-        loading={isLoading}
+        loading={isLoadingList}
         rowKey="id"
         pagination={{
-          current: (response?.pagination.page ?? 0) + 1,
+          current: (response?.pagination.page ?? 1),
           pageSize: response?.pagination.pageSize,
           total: response?.pagination.total ?? 0,
           showSizeChanger: true,
@@ -140,8 +161,12 @@ export default function RolesView() {
         title={editing ? 'Editar rol' : 'Crear rol'}
         open={open}
         onOk={handleOk}
-        onCancel={() => setOpen(false)}
-        destroyOnClose
+        onCancel={() => {
+          setOpen(false);
+          form.resetFields()
+        }}
+        destroyOnHidden
+        loading={isLoadingData}
       >
         <Form form={form} layout="vertical">
           <Form.Item name="name" label="Nombre" rules={[{ required: true }]}>

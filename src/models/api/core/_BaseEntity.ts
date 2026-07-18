@@ -3,5 +3,5 @@ export default interface BaseEntity {
   name?: string
   readonly createdAt?: string
   readonly updatedAt?: string
-  readonly deletedAt?: string | null
+  readonly deletedAt?: string
 }

@@ -7,6 +7,7 @@ import AbstractService, {
   FindBy,
   UpdateParams,
   ServiceConfig,
+  RestoreParams,
 } from '@/models/api/core/AbstractService'
 import BaseEntity from '@/models/api/core/_BaseEntity'
 import { type AxiosInstance } from 'axios'
@@ -15,17 +16,11 @@ import PaginationResponse from '@/models/api/core/PaginationResponse'
 import { BaseResponse } from '@/models/api/core/BaseResponse'
 import { appSettings } from '@/AppSettings'
 
-export default class Service<
-  Entity extends BaseEntity,
-> implements AbstractService<Entity> {
+export default class Service<Entity extends BaseEntity> implements AbstractService<Entity> {
   protected readonly axios: AxiosInstance
   protected readonly endpoint: string
 
-  constructor({
-    origin = appSettings.apiService,
-    initPath = 'api',
-    endpoint = '',
-  }: ApiServiceParams) {
+  constructor({ origin = appSettings.apiService, initPath = 'api', endpoint = '' }: ApiServiceParams) {
     if (!origin) throw new Error('Origin is required for ApiService instance')
     this.endpoint = endpoint
     this.axios = axiosInstance({ origin, initPath })
@@ -91,6 +86,13 @@ export default class Service<
   async delete(params: DeleteParams): Promise<void> {
     await this.axios.delete(
       this.getUrl(params.endpoint, params.id),
+      this.withMeta(params.config)
+    )
+  }
+
+  async restore(params: RestoreParams): Promise<void> {
+    await this.axios.delete(
+      this.getUrl(params.endpoint, `${params.id}/restore`),
       this.withMeta(params.config)
     )
   }

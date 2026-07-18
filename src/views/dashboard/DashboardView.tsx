@@ -16,7 +16,7 @@ export default function DashboardView() {
 
   const [params, setParams] = useState<Record<string, unknown>>({
     search: '',
-    page: 0,
+    page: 1,
     size: 15,
   })
   const [open, setOpen] = useState(false)
@@ -40,7 +40,7 @@ export default function DashboardView() {
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setParams((prev) => ({
       ...prev,
-      page: (pagination.current ?? 1) - 1,
+      page: (pagination.current ?? 1),
       size: pagination.pageSize ?? prev.size,
     }))
   }
@@ -65,7 +65,7 @@ export default function DashboardView() {
 
   const handleDelete = async (id?: number | string) => {
     if (!id) return
-    await crud.remove({ id })
+    await crud.delete({ id })
     message.success('Usuario eliminado')
   }
 
@@ -76,7 +76,7 @@ export default function DashboardView() {
       name: values.name,
       surname: values.surname,
       email: values.email,
-      role: values.role ? (values.role.id as Role) : undefined,
+      role: { id: values.role.id } as Role,
     }
 
     if (values.password) {
@@ -119,9 +119,14 @@ export default function DashboardView() {
       title: 'Acciones',
       key: 'actions',
       align: 'center',
-      render: (_text, record) =>
-        record.id !== profile?.id &&
-        record.role?.name !== 'ADMIN' && (
+      render: (_text, record) => {
+        if (record.role?.id === 1) return null //super admin no editable
+
+        if (record.id === profile?.id) return null //No se puede editar mi propia informacion
+
+        if (Number(record.role!.id) < Number(profile?.role!.id)) return null
+
+        return (
           <Space>
             <Button type="link" onClick={() => openEditModal(record)}>
               Editar
@@ -130,7 +135,9 @@ export default function DashboardView() {
               Eliminar
             </Button>
           </Space>
-        ),
+        )
+
+      },
     },
   ]
 
@@ -148,7 +155,7 @@ export default function DashboardView() {
         loading={isLoading}
         rowKey="id"
         pagination={{
-          current: (response?.pagination.page ?? 0) + 1,
+          current: (response?.pagination.page ?? 1),
           pageSize: response?.pagination.pageSize,
           total: response?.pagination.total ?? 0,
           showSizeChanger: true,
@@ -165,7 +172,7 @@ export default function DashboardView() {
         okText="Guardar"
         cancelText="Cancelar"
         confirmLoading={crud.isCreating || crud.isUpdating}
-        destroyOnClose
+        destroyOnHidden
         style={{ top: 10 }}
       >
         <Form form={form} layout="vertical">
@@ -175,7 +182,7 @@ export default function DashboardView() {
             rules={[
               { required: true, message: 'Ingresa un nombre de usuario' },
               {
-                pattern: /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/,
+                pattern: /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9.\s]+$/,
                 message: 'Solo se permiten letras, espacios y puntos',
               },
             ]}
@@ -207,18 +214,6 @@ export default function DashboardView() {
             ]}
           >
             <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            label="Contraseña"
-            rules={
-              editingUser
-                ? []
-                : [{ required: true, message: 'Ingresa la contraseña' }]
-            }
-          >
-            <Input.Password />
           </Form.Item>
 
           <Form.Item
