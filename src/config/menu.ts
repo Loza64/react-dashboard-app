@@ -1,7 +1,7 @@
 import { Users, Key, LayoutDashboard } from 'lucide-react'
 import React from 'react'
 import type { LucideProps } from 'lucide-react'
-import type { MenuItem, SubMenuItem } from '@/models/app/menu'
+import type { MenuItem } from '@/models/app/menu'
 import { roles } from '@/enum/role'
 import { RoutesEnum } from '@/enum/routes..app'
 
@@ -15,7 +15,6 @@ export const menu: MenuItem[] = [
     label: 'Dashboard',
     authorized: [roles.all],
     view: true,
-    children: [],
   },
   {
     key: RoutesEnum.ROLES,
@@ -23,7 +22,6 @@ export const menu: MenuItem[] = [
     label: 'Roles',
     authorized: [roles.all],
     view: true,
-    children: [],
   },
   {
     key: RoutesEnum.PERMISSIONS,
@@ -31,17 +29,27 @@ export const menu: MenuItem[] = [
     label: 'Permisos',
     authorized: [roles.all],
     view: true,
-    children: [],
   },
 ]
 
-export function selectItemMenu(route: string): MenuItem | undefined {
-  const data = menu.find((item) => route.startsWith(item.key))
-  return data
+function findMenuChain(
+  items: MenuItem[],
+  route: string
+): MenuItem[] | undefined {
+  for (const item of items) {
+    const matches = item.key === route || route.startsWith(item.key)
+    if (!matches) continue
+
+    if (item.children?.length) {
+      const childChain = findMenuChain(item.children, route)
+      if (childChain) return [item, ...childChain]
+    }
+
+    return [item]
+  }
+  return undefined
 }
 
-export function selectSubItemMenu(route: string): SubMenuItem | undefined {
-  const item = selectItemMenu(route)
-  const data = (item?.children || []).find((item) => item.key === route)
-  return data
+export function selectMenuKeys(route: string): string[] {
+  return findMenuChain(menu, route)?.map((item) => item.key) ?? []
 }

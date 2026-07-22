@@ -1,9 +1,9 @@
-import { menu, selectItemMenu, selectSubItemMenu } from '@/config/menu'
+import { menu, selectMenuKeys } from '@/config/menu'
 import { searchRecoil } from '@/constants/recoil'
 import type { RoleName } from '@/enum/role'
 import useRecoilStorage from '@/hooks/core/useRecoilStorage'
 import { useSession } from '@/hooks/useSession'
-import type { MenuItem, SubMenuItem } from '@/models/app/menu'
+import type { MenuItem } from '@/models/app/menu'
 import {
   CloseOutlined,
   LeftOutlined,
@@ -24,11 +24,54 @@ import {
   Typography,
 } from 'antd'
 import type { MenuProps } from 'antd/lib'
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 const { Sider } = Layout
 const { Text } = Typography
+
+const isAuthorized = (item: MenuItem, role: RoleName) =>
+  item.authorized.includes(role) || item.authorized.includes('*')
+
+function buildMenuItemsForAntd(
+  items: MenuItem[],
+  role: RoleName,
+  collapsed: boolean,
+  depth = 0
+): MenuProps['items'] {
+  return items.reduce<NonNullable<MenuProps['items']>>((acc, item) => {
+    const children = item.children?.length
+      ? buildMenuItemsForAntd(item.children, role, collapsed, depth + 1)
+      : undefined
+
+    const hasVisibleChildren = !!children?.length
+    const authorized = isAuthorized(item, role) && item.view !== false
+
+    if (!authorized && !hasVisibleChildren) return acc
+
+    acc.push({
+      key: item.key,
+      icon: depth === 0 ? item.icon : undefined,
+      label:
+        depth === 0 ? (
+          item.label
+        ) : (
+          <Tooltip
+            placement="bottomRight"
+            title={collapsed ? undefined : item.label}
+          >
+            <div className="flex items-center gap-2">
+              {item.icon && <span>{item.icon}</span>}
+              {item.label}
+            </div>
+          </Tooltip>
+        ),
+      children: hasVisibleChildren ? children : undefined,
+    })
+
+    return acc
+  }, [])
+}
 
 export default function OutletMenu({
   isMobile,
@@ -45,80 +88,19 @@ export default function OutletMenu({
 
   const role = profile?.role?.name
 
-  const buildMenuItemsForAntd = useCallback(
-    (
-      menu: MenuItem[],
-      role: RoleName,
-      collapsed: boolean
-    ): MenuProps['items'] => {
-      return menu
-        .filter(
-          (item) =>
-            item.authorized.includes(role) ||
-            item.authorized.includes('*') ||
-            item.children.some(
-              (c) =>
-                c.authorized.includes(role) ||
-                c.authorized.includes('*') ||
-                c.view
-            )
-        )
-        .map((item) => {
-          const children = item.children
-            .filter(
-              (c) =>
-                c.authorized.includes(role) ||
-                (c.authorized.includes('*') && c.view)
-            )
-            .map((c: SubMenuItem) => ({
-              key: c.key,
-              label: (
-                <Tooltip
-                  placement="bottomRight"
-                  title={collapsed ? undefined : c.label}
-                >
-                  <div className="flex items-center gap-2">
-                    {c.icon && <span>{c.icon}</span>}
-                    {c.label}
-                  </div>
-                </Tooltip>
-              ),
-              icon: undefined,
-            }))
-
-          return {
-            key: item.key,
-            label: item.label,
-            icon: item.icon,
-            children: children.length > 0 ? children : undefined,
-          }
-        })
-    },
-    []
-  )
-
   const location = useLocation()
 
   const filteredMenuItems = useMemo(
     () => buildMenuItemsForAntd(menu, role!, collapsed) ?? [],
-    [buildMenuItemsForAntd, role, collapsed]
+    [role, collapsed]
   )
 
-  const menuKey = useMemo(() => {
-    const item = selectItemMenu(location.pathname)
-    if (!item) return ''
-    return item.key
-  }, [location.pathname])
+  const selectedKeys = useMemo(
+    () => selectMenuKeys(location.pathname),
+    [location.pathname]
+  )
 
-  const subMenuKey = useMemo(() => {
-    const item = selectSubItemMenu(location.pathname)
-    if (!item) return ''
-    return item.key
-  }, [location.pathname])
-
-  const handleLogout = () => {
-    logout()
-  }
+  const handleLogout = () => logout()
 
   const handleMenuClick = (key: string) => {
     if (key === 'logout') return logout()
@@ -201,7 +183,7 @@ export default function OutletMenu({
                 <Menu
                   mode="inline"
                   theme="light"
-                  selectedKeys={[menuKey, subMenuKey]}
+                  selectedKeys={selectedKeys}
                   items={filteredMenuItems}
                   onClick={({ key }) => {
                     if (key === location.pathname) return
@@ -250,7 +232,7 @@ export default function OutletMenu({
             <Menu
               mode="inline"
               theme="light"
-              selectedKeys={[menuKey, subMenuKey]}
+              selectedKeys={selectedKeys}
               items={filteredMenuItems}
               onClick={({ key }) => {
                 if (key === location.pathname) return
