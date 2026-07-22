@@ -1,16 +1,15 @@
 import { Button, Form, Input, Modal, Select, Space, Table } from 'antd'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import { useEffect, useState } from 'react'
-import type Role from '@/models/api/entities/Role'
-import type Permissions from '@/models/api/entities/Permissions'
-import { queryKeys } from '@/lib/queryClient'
-import { roleService, permissionService } from '@/services/api'
+import { queryKeys } from '@/config/queryClient'
 import { useFindAll } from '@/hooks/core/useFindAll'
 import useCrud from '@/hooks/core/useCrud'
 import { useSession } from '@/hooks/useSession'
+import Role from '@/models/entities/Role'
+import Permissions from '@/models/entities/Permissions'
+import { permissionService, roleService } from '@/api'
 
 export default function RolesView() {
-
   const { profile } = useSession()
 
   const [editing, setEditing] = useState<number>()
@@ -53,7 +52,7 @@ export default function RolesView() {
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setParams((prev) => ({
       ...prev,
-      page: (pagination.current ?? 1),
+      page: pagination.current ?? 1,
       size: pagination.pageSize ?? prev.size,
     }))
   }
@@ -114,7 +113,7 @@ export default function RolesView() {
                     createdAt: undefined,
                     deletedAt: undefined,
                     updatedAt: undefined,
-                    id: undefined
+                    id: undefined,
                   },
                 })
               }
@@ -123,15 +122,15 @@ export default function RolesView() {
             </Button>
           </Space>
         )
-      }
-
+      },
     },
   ]
 
-  const permissionsOptions = permissionsResponse?.data?.map((p: Permissions) => ({
-    label: p.title ?? `${p.method ?? ''} ${p.path ?? ''}`,
-    value: p.id
-  })
+  const permissionsOptions = permissionsResponse?.data?.map(
+    (p: Permissions) => ({
+      label: p.title ?? `${p.method ?? ''} ${p.path ?? ''}`,
+      value: p.id,
+    })
   )
 
   return (
@@ -148,7 +147,7 @@ export default function RolesView() {
         loading={isLoadingList}
         rowKey="id"
         pagination={{
-          current: (response?.pagination.page ?? 1),
+          current: response?.pagination.page ?? 1,
           pageSize: response?.pagination.pageSize,
           total: response?.pagination.total ?? 0,
           showSizeChanger: true,
@@ -162,7 +161,7 @@ export default function RolesView() {
         open={open}
         onOk={handleOk}
         onCancel={() => {
-          setOpen(false);
+          setOpen(false)
           form.resetFields()
         }}
         destroyOnHidden

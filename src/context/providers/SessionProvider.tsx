@@ -4,15 +4,15 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { SessionContext } from '../SessionContext'
-import type User from '@/models/api/entities/User'
-import type SessionType from '@/models/context/SessionType'
-import type SessionResponse from '@/models/api/SessionResponse'
-import { userService } from '@/services/api'
-import { appSettings } from '@/AppSettings'
-import { queryKeys } from '@/lib/queryClient'
+import { sdkSettings } from '@/sdk/core/SdkSettings'
+import { queryKeys } from '@/config/queryClient'
+import { userService } from '@/api'
+import SessionResponse from '@/sdk/model/response/SessionResponse'
+import User from '@/models/entities/User'
+import SessionType from '@/models/app/context/SessionType'
 
 const service = userService
-const settings = appSettings
+const settings = sdkSettings
 
 export default function SessionProvider({ children }: { children: ReactNode }) {
   const [messageApi, contextHolder] = message.useMessage()

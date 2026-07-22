@@ -1,6 +1,6 @@
 import { useContext } from 'react'
-import type SessionType from '../models/context/SessionType'
 import { SessionContext } from '../context/SessionContext'
+import SessionType from '@/models/app/context/SessionType'
 
 export const useSession = (): SessionType => {
   const context = useContext(SessionContext)

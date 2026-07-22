@@ -1,29 +1,35 @@
+import { type AxiosInstance } from 'axios'
+import { AxiosConfig } from './AxiosConfig'
+import { sdkSettings } from '@/sdk/core/SdkSettings'
+import BaseEntity from '../model/entities/BaseEntity'
 import AbstractService, {
   ApiServiceParams,
   CreateParams,
   DeleteParams,
   FindAllParams,
   FindByIdParams,
-  FindBy,
-  UpdateParams,
-  ServiceConfig,
+  FindByParams,
   RestoreParams,
-} from '@/models/api/core/AbstractService'
-import BaseEntity from '@/models/api/core/_BaseEntity'
-import { type AxiosInstance } from 'axios'
-import { axiosInstance } from '../utils/axiosInstance'
-import PaginationResponse from '@/models/api/core/PaginationResponse'
-import { BaseResponse } from '@/models/api/core/BaseResponse'
-import { appSettings } from '@/AppSettings'
+  ServiceConfig,
+  UpdateParams,
+} from '../model/core/AbstractService'
+import { BaseResponse } from '../model/response/BaseResponse'
+import PaginationResponse from '../model/response/PaginationResponse'
 
-export default class Service<Entity extends BaseEntity> implements AbstractService<Entity> {
+export default class Service<
+  Entity extends BaseEntity,
+> implements AbstractService<Entity> {
   protected readonly axios: AxiosInstance
   protected readonly endpoint: string
 
-  constructor({ origin = appSettings.apiService, initPath = 'api', endpoint = '' }: ApiServiceParams) {
+  constructor({
+    origin = sdkSettings.apiService,
+    initPath = 'api',
+    endpoint = '',
+  }: ApiServiceParams) {
     if (!origin) throw new Error('Origin is required for ApiService instance')
     this.endpoint = endpoint
-    this.axios = axiosInstance({ origin, initPath })
+    this.axios = AxiosConfig({ origin, initPath })
   }
 
   private getUrl(endpoint?: string, idOrPath?: string | number): string {
@@ -57,7 +63,7 @@ export default class Service<Entity extends BaseEntity> implements AbstractServi
     return res.data
   }
 
-  async findBy(params: FindBy): Promise<BaseResponse<Entity>> {
+  async findBy(params: FindByParams): Promise<BaseResponse<Entity>> {
     const response = await this.axios.get<BaseResponse<Entity>>(
       this.getUrl(params.endpoint, params.path),
       this.withMeta(params.config)

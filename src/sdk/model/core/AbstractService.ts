@@ -1,8 +1,11 @@
 import type { AxiosRequestConfig } from 'axios'
-import PaginationResponse from './PaginationResponse'
-import { BaseResponse } from './BaseResponse'
+import PaginationResponse from '../response/PaginationResponse'
+import { BaseResponse } from '../response/BaseResponse'
 
-interface RequestMeta { onUnauthorized?: () => void, onForbidden?: () => void }
+interface RequestMeta {
+  onUnauthorized?: () => void
+  onForbidden?: () => void
+}
 
 export type ServiceConfig = AxiosRequestConfig & RequestMeta
 
@@ -23,7 +26,7 @@ export interface FindByIdParams extends RequestMeta {
   config?: ServiceConfig
 }
 
-export interface FindBy extends RequestMeta {
+export interface FindByParams extends RequestMeta {
   endpoint?: string
   path: string
   config?: ServiceConfig
@@ -57,7 +60,7 @@ export interface RestoreParams extends RequestMeta {
 export default abstract class AbstractService<Entity> {
   abstract findAll(params?: FindAllParams): Promise<PaginationResponse<Entity>>
   abstract findById(params: FindByIdParams): Promise<BaseResponse<Entity>>
-  abstract findBy(params: FindBy): Promise<BaseResponse<Entity>>
+  abstract findBy(params: FindByParams): Promise<BaseResponse<Entity>>
   abstract create(params: CreateParams<Entity>): Promise<BaseResponse<Entity>>
   abstract update(params: UpdateParams<Entity>): Promise<BaseResponse<Entity>>
   abstract delete(params: DeleteParams): Promise<void>

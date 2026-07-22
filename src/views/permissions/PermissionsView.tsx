@@ -2,12 +2,12 @@ import { Button, Form, Input, Modal, Space, Table, message } from 'antd'
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import { useState } from 'react'
 
-import type Permissions from '@/models/api/entities/Permissions'
-import { permissionService } from '@/services/api'
 import { useFindAll } from '@/hooks/core/useFindAll'
 import useCrud from '@/hooks/core/useCrud'
-import { queryKeys } from '@/lib/queryClient'
+import { queryKeys } from '@/config/queryClient'
 import errorResponse from '@/utils/errorResponse'
+import { permissionService } from '@/api'
+import Permissions from '@/models/entities/Permissions'
 
 export default function PermissionsView() {
   const [editingPermission, setEditingPermission] =
@@ -36,7 +36,7 @@ export default function PermissionsView() {
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setParams((prev) => ({
       ...prev,
-      page: (pagination.current ?? 1),
+      page: pagination.current ?? 1,
       size: pagination.pageSize ?? prev.size,
     }))
   }
@@ -119,7 +119,7 @@ export default function PermissionsView() {
         dataSource={response?.data}
         loading={isLoading}
         pagination={{
-          current: (response?.pagination.page ?? 1),
+          current: response?.pagination.page ?? 1,
           pageSize: response?.pagination.pageSize,
           total: response?.pagination.total ?? 0,
           showSizeChanger: true,

@@ -1,12 +1,12 @@
-import type User from '@/models/api/entities/User'
-import { appSettings } from '@/AppSettings'
-import SessionResponse from '@/models/api/SessionResponse'
-import Service from '@/services/core/Service'
+import User from '@/models/entities/User'
+import { sdkSettings } from '@/sdk/core/SdkSettings'
+import Service from '@/sdk/core/Service'
+import SessionResponse from '@/sdk/model/response/SessionResponse'
 
 export default class UserService extends Service<User> {
   constructor() {
     super({
-      origin: appSettings.apiService,
+      origin: sdkSettings.apiService,
       endpoint: '/users',
     })
   }

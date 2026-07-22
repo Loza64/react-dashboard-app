@@ -4,7 +4,7 @@ type StorageLocal = {
   removeItem(key: string): void
 }
 
-export default class AppSettings {
+export default class SdkSettings {
   private storage: StorageLocal
 
   constructor(storage: StorageLocal = localStorage) {
@@ -53,4 +53,4 @@ export default class AppSettings {
   }
 }
 
-export const appSettings = new AppSettings()
+export const sdkSettings = new SdkSettings()

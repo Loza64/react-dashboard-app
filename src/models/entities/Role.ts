@@ -1,7 +1,6 @@
 import type { RoleName } from '@/enum/role'
-import type Permissions from './Permissions'
-import BaseEntity from '../core/_BaseEntity'
-
+import BaseEntity from '@/sdk/model/entities/BaseEntity'
+import Permissions from './Permissions'
 export default interface Role extends BaseEntity {
   name: RoleName
   permissions: Permissions[]

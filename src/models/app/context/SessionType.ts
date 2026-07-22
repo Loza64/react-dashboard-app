@@ -1,5 +1,5 @@
-import type User from '../api/entities/User'
-import type SessionResponse from '../api/SessionResponse'
+import User from '@/models/entities/User'
+import SessionResponse from '@/sdk/model/response/SessionResponse'
 
 export default interface SessionType {
   profile?: User

@@ -1,4 +1,4 @@
-import type ErrorResponse from '@/models/api/ErrorResponse'
+import type ErrorResponse from '@/sdk/model/response/ErrorResponse'
 import type { AxiosError } from 'axios'
 import { toast } from 'react-toastify'
 

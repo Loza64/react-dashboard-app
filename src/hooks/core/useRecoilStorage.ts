@@ -2,9 +2,8 @@ import { useEffect } from 'react'
 import { AtomEffect, atomFamily, useRecoilState, RecoilState } from 'recoil'
 import { ZodType, z } from 'zod'
 import CryptoJS from 'crypto-js'
-import { appSettings } from '@/AppSettings'
+import { sdkSettings } from '@/sdk/core/SdkSettings'
 
-// Effect de Recoil para sincronizar con localStorage y validar con Zod
 export const localStorageEffectWithZod = <T>(
   storageKey: string,
   schema: ZodType<T>
@@ -12,7 +11,7 @@ export const localStorageEffectWithZod = <T>(
   return ({ setSelf, onSet }) => {
     if (typeof window === 'undefined') return
 
-    const SECRET_KEY = appSettings.secretKey
+    const SECRET_KEY = sdkSettings.secretKey
     const savedValue = localStorage.getItem(storageKey)
 
     if (savedValue) {

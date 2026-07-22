@@ -1,4 +1,4 @@
-import BaseEntity from '../core/_BaseEntity'
+import BaseEntity from '../../sdk/model/entities/BaseEntity'
 import type Role from './Role'
 
 export default interface User extends BaseEntity {

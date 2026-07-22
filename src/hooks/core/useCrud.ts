@@ -1,12 +1,12 @@
-import BaseEntity from '@/models/api/core/_BaseEntity'
 import AbstractService, {
-  CreateParams,
-  DeleteParams,
+  FindByParams,
   FindByIdParams,
-  FindBy,
-  UpdateParams,
   RestoreParams,
-} from '@/models/api/core/AbstractService'
+  DeleteParams,
+  UpdateParams,
+  CreateParams,
+} from '@/sdk/model/core/AbstractService'
+import BaseEntity from '@/sdk/model/entities/BaseEntity'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface UseCrudOptions<Entity extends BaseEntity> {
@@ -99,7 +99,10 @@ export default function useCrud<Entity extends BaseEntity>({
   }
 
   const useFindBy = (
-    params: FindBy & { onUnauthorized?: () => void; onForbidden?: () => void }
+    params: FindByParams & {
+      onUnauthorized?: () => void
+      onForbidden?: () => void
+    }
   ) => {
     return useQuery({
       queryKey: [queryKey, params],

@@ -1,5 +1,5 @@
 import { useSession } from '@/hooks/useSession'
-import type User from '@/models/api/entities/User'
+import User from '@/models/entities/User'
 import { Button, Form, Input, message, Tabs } from 'antd'
 
 interface LoginProps {
@@ -151,21 +151,17 @@ export default function AuthView() {
                     name="password"
                     className="w-full!"
                     rules={[
-                      {
-                        required: true,
-                        message: 'Ingresa la contraseña',
-                      },
+                      { required: true, message: 'Ingrese la contraseña' },
                       {
                         min: 8,
-                        max: 100,
                         message:
-                          'La contraseña debe tener entre 8 y 100 caracteres',
+                          'La contraseña debe tener al menos 8 caracteres',
                       },
                       {
                         pattern:
-                          /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&._-]).+$/,
+                          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/,
                         message:
-                          'La contraseña debe incluir al menos una mayúscula, una minúscula, un número y un carácter especial',
+                          'Debe incluir mayúsculas, minúsculas, números y un carácter especial',
                       },
                     ]}
                   >

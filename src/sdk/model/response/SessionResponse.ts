@@ -1,4 +1,4 @@
-import type User from './entities/User'
+import type User from '../../../models/entities/User'
 
 export default interface SessionResponse {
   token: string

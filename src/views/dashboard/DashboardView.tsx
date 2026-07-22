@@ -3,13 +3,13 @@ import type { ColumnsType, TablePaginationConfig } from 'antd/es/table'
 import { useMemo, useState } from 'react'
 import { useFindAll } from '@/hooks/core/useFindAll'
 import useCrud from '@/hooks/core/useCrud'
-import { queryKeys } from '@/lib/queryClient'
-import type User from '@/models/api/entities/User'
-import type Role from '@/models/api/entities/Role'
-import { roleService, userService } from '@/services/api'
+import { queryKeys } from '@/config/queryClient'
 import SelectApi from '@/components/core/SelectApi'
 import { useSession } from '@/hooks/useSession'
 import errorResponse from '@/utils/errorResponse'
+import User from '@/models/entities/User'
+import { roleService, userService } from '@/api'
+import Role from '@/models/entities/Role'
 
 export default function DashboardView() {
   const { profile } = useSession()
@@ -40,7 +40,7 @@ export default function DashboardView() {
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setParams((prev) => ({
       ...prev,
-      page: (pagination.current ?? 1),
+      page: pagination.current ?? 1,
       size: pagination.pageSize ?? prev.size,
     }))
   }
@@ -136,7 +136,6 @@ export default function DashboardView() {
             </Button>
           </Space>
         )
-
       },
     },
   ]
@@ -155,7 +154,7 @@ export default function DashboardView() {
         loading={isLoading}
         rowKey="id"
         pagination={{
-          current: (response?.pagination.page ?? 1),
+          current: response?.pagination.page ?? 1,
           pageSize: response?.pagination.pageSize,
           total: response?.pagination.total ?? 0,
           showSizeChanger: true,
@@ -176,7 +175,7 @@ export default function DashboardView() {
         style={{ top: 10 }}
       >
         <Form form={form} layout="vertical">
-          <Form.Item
+          <Form.Item<User>
             name="username"
             label="Usuario"
             rules={[
@@ -189,7 +188,7 @@ export default function DashboardView() {
           >
             <Input />
           </Form.Item>
-          <Form.Item
+          <Form.Item<User>
             name="name"
             label="Nombres"
             rules={[{ required: true, message: 'Ingresa el nombre' }]}
@@ -197,7 +196,7 @@ export default function DashboardView() {
             <Input />
           </Form.Item>
 
-          <Form.Item
+          <Form.Item<User>
             name="surname"
             label="Apellidos"
             rules={[{ required: true, message: 'Ingresa el apellido' }]}
@@ -205,7 +204,7 @@ export default function DashboardView() {
             <Input />
           </Form.Item>
 
-          <Form.Item
+          <Form.Item<User>
             name="email"
             label="Correo"
             rules={[
@@ -216,7 +215,7 @@ export default function DashboardView() {
             <Input />
           </Form.Item>
 
-          <Form.Item
+          <Form.Item<User>
             name="role"
             label="Rol"
             rules={[{ required: true, message: 'Selecciona un rol' }]}
@@ -225,9 +224,29 @@ export default function DashboardView() {
               service={roleService}
               queryKey={queryKeys.roles}
               placeholder="Selecciona un rol"
-              renderOption={(item) => item.name}
             />
           </Form.Item>
+
+          {!editingUser && (
+            <Form.Item<User>
+              name="password"
+              label="Contraseña"
+              rules={[
+                { required: true, message: 'Ingrese la contraseña' },
+                {
+                  min: 8,
+                  message: 'La contraseña debe tener al menos 8 caracteres',
+                },
+                {
+                  pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/,
+                  message:
+                    'Debe incluir mayúsculas, minúsculas, números y un carácter especial',
+                },
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
+          )}
         </Form>
       </Modal>
     </div>

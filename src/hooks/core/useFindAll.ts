@@ -1,6 +1,6 @@
-import BaseEntity from '@/models/api/core/_BaseEntity'
-import AbstractService from '@/models/api/core/AbstractService'
-import PaginationResponse from '@/models/api/core/PaginationResponse'
+import AbstractService from '@/sdk/model/core/AbstractService'
+import BaseEntity from '@/sdk/model/entities/BaseEntity'
+import PaginationResponse from '@/sdk/model/response/PaginationResponse'
 import {
   useQuery,
   UseQueryResult,
