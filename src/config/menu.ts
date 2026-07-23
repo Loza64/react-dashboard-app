@@ -2,8 +2,8 @@ import { Users, Key, LayoutDashboard } from 'lucide-react'
 import React from 'react'
 import type { LucideProps } from 'lucide-react'
 import type { MenuItem } from '@/models/app/menu'
-import { roles } from '@/enum/role'
 import { RoutesEnum } from '@/enum/routes..app'
+import { routesConfig } from './routes.app'
 
 export const createIcon = (IconComponent: React.ComponentType<LucideProps>) =>
   React.createElement(IconComponent)
@@ -13,21 +13,21 @@ export const menu: MenuItem[] = [
     key: RoutesEnum.DASHBOARD,
     icon: createIcon(LayoutDashboard),
     label: 'Dashboard',
-    authorized: [roles.all],
+    authorized: routesConfig[RoutesEnum.DASHBOARD].roles,
     view: true,
   },
   {
     key: RoutesEnum.ROLES,
     icon: createIcon(Users),
     label: 'Roles',
-    authorized: [roles.all],
+    authorized: routesConfig[RoutesEnum.ROLES].roles,
     view: true,
   },
   {
     key: RoutesEnum.PERMISSIONS,
     icon: createIcon(Key),
     label: 'Permisos',
-    authorized: [roles.all],
+    authorized: routesConfig[RoutesEnum.PERMISSIONS].roles,
     view: true,
   },
 ]

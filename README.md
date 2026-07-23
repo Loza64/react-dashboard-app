@@ -1,420 +1,506 @@
-# Documentación Técnica — Frontend (spring-app-template)
+# Documentación Técnica — Panel Admin (React + SDK propio)
 
-> Repositorio de referencia para pruebas: https://github.com/Loza64/spring-app-template.git
+## 1. Visión general
 
-## 1. Descripción general
+Es un panel administrativo **React + TypeScript** (Vite, por `import.meta.env` y `vite-env.d.ts`) con:
 
-Aplicación **SPA (Single Page Application)** construida con **React + TypeScript + Vite**, orientada a la administración de usuarios, roles y permisos (panel de administración tipo backoffice). Consume una API REST (el backend de referencia es un proyecto Spring Boot, según el repositorio de prueba indicado) mediante Axios, con autenticación por token Bearer y control de acceso basado en roles/permisos.
+- **Enrutamiento por archivos**: `@generouted/react-router/lazy` (las rutas se generan a partir de `src/pages/*`).
+- **Server state**: `@tanstack/react-query` (`useQuery`, `useMutation`, `useInfiniteQuery`).
+- **Estado global/persistente**: `recoil` + cifrado con `crypto-js` en `localStorage`.
+- **UI Kit**: `antd` (Ant Design) + Tailwind (clases utilitarias) + `lucide-react` (íconos).
+- **HTTP**: `axios`, encapsulado en un **SDK propio** tipo "ORM de API REST" genérico.
+- **Validación de esquemas**: `zod` (solo para lo persistido en Recoil/localStorage).
+- **Notificaciones**: `react-toastify` (errores globales / axios) + `antd message` (feedback de formularios).
 
-### 1.1 Stack tecnológico
+Patrón general: **Service (SDK) → Hook genérico (React Query) → Vista (antd)**. Todo endpoint CRUD reutiliza la misma clase `Service` y los mismos hooks (`useFindAll`, `useCrud`, `useInfiniteFindAll`), evitando repetir lógica de fetching por entidad.
 
-| Categoría | Tecnología |
+---
+
+## 2. Estructura de carpetas
+
+```
+src/
+├── api/                  # Instancias concretas de servicios (uno por entidad)
+│   ├── index.ts
+│   └── custom/UserService.ts
+├── sdk/                  # SDK genérico de acceso a API (motor CRUD)
+│   ├── core/
+│   │   ├── AxiosConfig.ts
+│   │   ├── SdkSettings.ts
+│   │   └── Service.ts
+│   └── model/
+│       ├── core/AbstractService.ts
+│       ├── entities/BaseEntity.ts
+│       └── response/{BaseResponse,PaginationResponse,SessionResponse,ErrorResponse}.ts
+├── hooks/
+│   ├── core/
+│   │   ├── useCrud.ts
+│   │   ├── useFindAll.ts
+│   │   ├── useInfiniteFindAll.ts
+│   │   ├── useQueryParams.ts
+│   │   └── useRecoilStorage.ts
+│   └── useSession.ts
+├── context/
+│   ├── SessionContext.ts
+│   └── providers/SessionProvider.tsx
+├── models/
+│   ├── entities/{User,Role,Permissions}.ts
+│   └── app/{menu.ts, context/SessionType.ts, photos/*.ts}
+├── config/
+│   ├── routes.app.ts     # matriz de permisos/rutas
+│   ├── menu.ts           # menú lateral
+│   ├── queryClient.ts    # QueryClient + queryKeys
+│   └── antd.ts           # theming de Ant Design
+├── enum/
+│   ├── role.ts
+│   └── routes..app.ts
+├── components/core/SelectApi.tsx   # <Select> con fetching remoto genérico
+├── ui/                    # componentes de layout / media
+│   ├── outlet/{OutletContainer,OutletMenu}.tsx
+│   ├── Media.tsx
+│   └── AvatarUploader.tsx
+├── views/                 # pantallas (lógica de negocio + antd)
+│   ├── login/LoginView.tsx
+│   ├── dashboard/DashboardView.tsx
+│   ├── roles/RolesView.tsx
+│   ├── permissions/PermissionsView.tsx
+│   ├── AppOutlet.tsx
+│   ├── NotFoundView.tsx
+│   └── ForbiddenView.tsx
+├── pages/                 # rutas de generouted (solo enlazan a views/)
+├── utils/{permission.app.ts, errorResponse.ts}
+├── App.tsx
+└── main.tsx
+```
+
+## 3. El SDK (`src/sdk`)
+
+El SDK es la pieza central: un cliente HTTP genérico y tipado para exponer operaciones CRUD estándar contra cualquier endpoint REST.
+
+### 3.1 `SdkSettings` (`sdk/core/SdkSettings.ts`)
+
+Singleton (`export const sdkSettings = new SdkSettings()`) que centraliza:
+
+| Miembro | Descripción |
 |---|---|
-| Framework UI | React (con TSX) |
-| Bundler / dev server | Vite (`import.meta.env`, `vite-env.d.ts`) |
-| Lenguaje | TypeScript |
-| Enrutamiento | `@generouted/react-router` (ruteo basado en archivos, carpeta `src/pages`) + `react-router-dom` |
-| Librería de componentes UI | Ant Design (`antd`, `@ant-design/icons`) |
-| Estilos utilitarios | Tailwind CSS (clases utilitarias en JSX) |
-| Manejo de datos remotos | TanStack Query (`@tanstack/react-query`) |
-| Cliente HTTP | Axios, con instancia centralizada e interceptores |
-| Estado global/local persistente | Recoil (`atomFamily`) + `crypto-js` (cifrado AES en localStorage) |
-| Validación de esquemas | Zod |
-| Notificaciones | `react-toastify` (errores globales) y `antd message` (feedback puntual de formularios) |
-| Fechas | `dayjs` (locale `es`) |
-| Iconos | `lucide-react`, `@ant-design/icons` |
-| Debounce | `lodash.debounce` |
+| `apiService` (getter) | Lee `import.meta.env.VITE_API_SERVICE`. Lanza error si no existe. |
+| `secretKey` (getter) | Lee `import.meta.env.VITE_SECRET_KEY`. Usado para cifrar Recoil/localStorage. |
+| `token` (getter/setter) | Lee/escribe el JWT en `localStorage` (clave `"token"`). |
+| `removeToken()` | Elimina el token. |
 
-### 1.2 Convención de capas
+Es inyectable: recibe un `storage` custom en el constructor (por defecto `localStorage`), útil para tests o SSR.
 
-El proyecto separa responsabilidades en capas reutilizables:
-
+**Variables de entorno requeridas** (`.env`):
 ```
-pages/      → puntos de entrada de ruteo (generouted), delegan a views/
-views/      → pantallas completas (lógica de negocio + composición de UI)
-ui/         → componentes de presentación reutilizables (menú, uploader, media)
-components/ → componentes "core" genéricos reutilizables entre entidades (SelectApi)
-hooks/      → hooks reutilizables para consumo de API y utilidades (useCrud, useFindAll…)
-services/   → capa de acceso a datos (Service genérico + servicios custom)
-models/     → tipados de entidades, DTOs, contratos de API
-config/     → configuración estática (rutas, menú, tema de Ant Design, entorno)
-context/    → contexto de sesión de usuario (React Context)
-enum/       → enumeraciones (rutas, roles)
-utils/      → utilidades puras (manejo de errores, permisos)
-constants/  → constantes compartidas
+VITE_API_SERVICE=https://api.tu-backend.com
+VITE_SECRET_KEY=una_clave_secreta_para_cifrar_recoil
 ```
 
----
+### 3.2 `AxiosConfig` (`sdk/core/AxiosConfig.ts`)
 
-## 2. Arranque de la aplicación
-
-**`main.tsx`** monta la raíz de React e importa los estilos globales (`styles/index.css`).
-
-**`App.tsx`** es el componente raíz y compone, en este orden:
-
-1. `ToastContainer` (react-toastify) — notificaciones globales.
-2. `RecoilRoot` — proveedor de estado atómico de Recoil.
-3. `QueryClientProvider` — proveedor de TanStack Query, usando la instancia `queryClient` exportada desde `lib/queryClient.ts`.
-4. `<Routes />` de `@generouted/react-router/lazy` — genera las rutas automáticamente a partir de la estructura de `src/pages`.
-
-También configura `dayjs.locale('es')` para formateo de fechas en español.
-
-### 2.1 Ruteo basado en archivos (`src/pages`)
-
-| Archivo | Ruta resultante | Vista |
-|---|---|---|
-| `pages/_app.tsx` | Layout raíz (envuelve todas las rutas) | `views/AppOutlet.tsx` |
-| `pages/index.tsx` | `/` | Redirige a `/dashboard` |
-| `pages/login/index.tsx` | `/login` | `views/login/LoginView.tsx` |
-| `pages/dashboard/index.tsx` | `/dashboard` | `views/dashboard/DashboardView.tsx` |
-| `pages/roles/index.tsx` | `/roles` | `views/roles/RolesView.tsx` |
-| `pages/permissions/index.tsx` | `/permissions` | `views/permissions/PermissionsView.tsx` |
-
-Cada `pages/*/index.tsx` es un simple *wrapper* que importa y renderiza su vista correspondiente desde `views/`, manteniendo el ruteo desacoplado de la lógica de pantalla.
-
-### 2.2 Layout raíz (`views/AppOutlet.tsx`)
-
-Envuelve todas las páginas con:
-
-- `SessionProvider` — contexto de sesión (autenticación).
-- `ConfigProvider` de Ant Design — tema personalizado (`config/antd.ts`) y locale en español (`antd/locale/es_ES`).
-- `Layout` de Ant Design + `OutletContainer` — layout visual con menú lateral y `<Outlet />` de React Router para renderizar la vista activa.
-
----
-
-## 3. Sesión y autenticación
-
-### 3.1 `AppSettings` (`AppSettings.ts`)
-
-Clase responsable de la persistencia del token de sesión:
-
-- `token` (getter/setter): lee/escribe el token en `localStorage` (o el storage inyectado por constructor).
-- `removeToken()`: elimina el token.
-- `apiService`: obtiene la URL base de la API desde `VITE_API_SERVICE` (variable de entorno).
-- `secretKey`: obtiene una clave desde `VITE_SECRET_KEY`, usada para cifrar datos en `localStorage` (ver `useRecoilStorage`).
-
-Se exporta una instancia singleton: `appSettings`.
-
-### 3.2 `SessionContext` / `useSession` / `SessionProvider`
-
-- **`SessionContext.ts`**: contexto de React tipado con `SessionType`.
-- **`useSession.ts`**: hook que consume el contexto; lanza un error explícito si se usa fuera del `SessionProvider`.
-- **`SessionProvider.tsx`**: implementa toda la lógica de sesión:
-  - Consulta el perfil del usuario autenticado (`userService.profile()`) vía TanStack Query, solo si existe un `token` (`enabled: !!token`).
-  - Expone mutaciones `login` y `signup` que delegan en `userService`.
-  - `saveSession`: persiste el token, cachea el perfil en TanStack Query y navega a `/dashboard`.
-  - `logout`: borra el token, limpia la cache de sesión, notifica con un mensaje y redirige a `/login` (con recarga completa de la página).
-  - Redirige automáticamente a `/login` si no hay token y la ruta actual no es `/login`.
-  - Muestra una pantalla de carga (`Cargando sesión...`) mientras se resuelve el perfil, si existe un token.
-
-### 3.3 Interceptores HTTP (`services/utils/axiosInstance.ts`)
-
-La instancia de Axios (`axiosInstance`) agrega:
-
-- **Interceptor de request**: adjunta `Authorization: Bearer <token>` si existe token; si el payload es `FormData`, elimina el header `Content-Type` para que el navegador lo gestione automáticamente (necesario para *multipart*).
-- **Interceptor de response** (manejo centralizado de errores):
-  - `401 Unauthorized`: si se define un callback `onUnauthorized` en la config de la petición, se ejecuta; si no, se limpia la sesión, se notifica con un `toast.warning` y se redirige a `/login`.
-  - `403 Forbidden`: si se define `onForbidden`, se ejecuta; si no, se muestra un `toast.warning` genérico.
-  - En ambos casos, los callbacks son inyectables por request (tipado extendido en `types/axios.d.ts`), permitiendo comportamiento distinto por pantalla/formulario (por ejemplo, mostrar un error de "credenciales inválidas" en el login en vez de redirigir).
-
----
-
-## 4. Control de acceso (roles y rutas)
-
-### 4.1 Roles (`enum/role.ts`)
+Factory que crea una instancia de axios por servicio:
 
 ```ts
-roles = { admin: 'ADMIN', user: 'USER', all: '*' }
+AxiosConfig({ origin, initPath }) // baseURL = `${origin}/${initPath}`
 ```
 
-### 4.2 Enum de rutas (`enum/routes..app.ts`)
+- **Interceptor de request**: agrega `Authorization: Bearer <token>` automáticamente desde `sdkSettings.token`; si el payload es `FormData`, elimina el header `Content-Type` para que el navegador lo setee con el boundary correcto.
+- **Interceptor de response** (manejo global de errores):
+  - `401` → si se pasó `onUnauthorized` en la config de la petición, lo ejecuta; si no, muestra un toast de sesión expirada, borra el token, limpia el cache de `session` en React Query y redirige a `/login`.
+  - `403` → si hay `onForbidden`, lo ejecuta; si no, muestra un toast de "sin permiso".
+  - Timeout por defecto: **60 segundos**.
 
-Define las rutas de la aplicación como enum (`RoutesEnum`): `ROOT`, `LOGIN`, `DASHBOARD`, `ROLES`, `PERMISSIONS`.
+### 3.3 `Service<Entity>` (`sdk/core/Service.ts`)
 
-### 4.3 Configuración de rutas (`config/routes.app.ts`)
-
-Mapa `routesConfig` que, por cada ruta, define:
-- `auth`: si requiere sesión iniciada.
-- `roles`: roles permitidos (`'*'` = todos).
-- `permission`: permisos requeridos (reservado para uso futuro).
-- `title`: título mostrado en el layout.
-- `search`: si la vista muestra el input de búsqueda en el header.
-
-### 4.4 `isAuthorized` (`utils/permission.app.ts`)
-
-Función utilitaria que valida si un `role` tiene acceso a una ruta, según `routesConfig`.
-
-### 4.5 Aplicación de las reglas (`OutletContainer.tsx`)
-
-Es el punto central donde se resuelven las reglas de acceso en cada navegación:
-- Si la ruta no existe en `routesConfig` → `NotFoundView` (404).
-- Si la ruta **no requiere auth** y hay usuario logueado → `ForbiddenView` (evita, por ejemplo, ver `/login` estando autenticado).
-- Si la ruta no requiere auth y no hay usuario → renderiza los `children` directamente (pantalla pública).
-- Si requiere auth → se calcula `allowed` con `isAuthorized`, se renderiza el menú lateral (`OutletMenu`) y el contenido (`children`).
-
-### 4.6 Menú dinámico (`config/menu.ts` + `OutletMenu.tsx`)
-
-- `menu`: array de `MenuItem` (Dashboard, Roles, Permisos) con ícono, ruta y roles autorizados.
-- `OutletMenu` filtra dinámicamente los ítems de menú (y submenús) según el rol del usuario autenticado, y resalta la ruta activa comparando `location.pathname` contra las claves del menú.
-- Incluye una versión responsiva: sidebar colapsable en escritorio y panel deslizante a pantalla completa en móvil (controlado por la prop `isMobile`, actualmente fijada en `false` de forma estática en `AppOutlet`).
-
----
-
-## 5. Capa de acceso a datos (Servicios)
-
-### 5.1 Contrato (`models/api/core/AbstractService.ts`)
-
-Clase abstracta genérica `AbstractService<Entity>` que define el contrato CRUD estándar:
+Implementación concreta de `AbstractService<Entity>`. Cada instancia representa un recurso REST (`endpoint`) y expone:
 
 ```ts
-findAll(params) → Promise<PaginationResponse<Entity>>
-findById(params) → Promise<BaseResponse<Entity>>
-findBy(params)   → Promise<BaseResponse<Entity>>   // búsqueda por path custom
-create(params)   → Promise<BaseResponse<Entity>>
-update(params)   → Promise<BaseResponse<Entity>>
-delete(params)   → Promise<void>
-restore(params)  → Promise<void>                    // soft-delete restore
+findAll(params)      // GET  {endpoint}
+findById(params)     // GET  {endpoint}/{id}
+findBy(params)       // GET  {endpoint}/{path}   (subrutas custom)
+create(params)       // POST {endpoint}
+update(params)       // PUT  {endpoint}/{id}
+delete(params)       // DELETE {endpoint}/{id}
+restore(params)      // PATCH {endpoint}/{id}/restore  (soft-delete undo)
 ```
 
-Todos los parámetros aceptan `onUnauthorized` y `onForbidden` (para personalizar el manejo de 401/403 por operación) y un `config` de tipo `ServiceConfig` (extiende `AxiosRequestConfig`).
+Constructor:
+```ts
+new Service<Entity>({
+  origin = sdkSettings.apiService, // por defecto usa el env
+  initPath = 'api',                // prefijo de baseURL
+  endpoint = '',                   // recurso, ej. 'roles'
+})
+```
 
-### 5.2 Implementación genérica (`services/core/Service.ts`)
+Todos los métodos aceptan `config?: ServiceConfig` (= `AxiosRequestConfig` + `{ onUnauthorized?, onForbidden? }`), que se propaga a los interceptores de axios para permitir overrides puntuales del manejo 401/403.
 
-`Service<Entity>` implementa `AbstractService<Entity>` de forma genérica y reutilizable para cualquier entidad:
-
-- Construye su propia instancia de Axios vía `axiosInstance({ origin, initPath })`, con `origin` por defecto `appSettings.apiService` y `initPath` por defecto `'api'`.
-- Resuelve URLs combinando el `endpoint` base de la instancia con un `id` o `path` opcional.
-- Cada método CRUD delega en el verbo HTTP correspondiente (`GET`, `POST`, `PUT`, `DELETE`) e inyecta los callbacks `onUnauthorized`/`onForbidden` en la config de Axios.
-- `restore` hace un `DELETE` a `"<endpoint>/<id>/restore"` (convención de soft-delete reversible).
-
-### 5.3 Servicios concretos (`services/api/index.ts`)
+### 3.4 Tipos del SDK (`sdk/model`)
 
 ```ts
-userService        → new UserService()                         // custom
-roleService         → new Service<Role>({ endpoint: 'roles' })
-permissionService   → new Service<Permissions>({ endpoint: 'permissions' })
+// BaseEntity — toda entidad del dominio la extiende
+interface BaseEntity {
+  readonly id?: string | number
+  name?: string
+  readonly createdAt?: string
+  readonly updatedAt?: string
+  readonly deletedAt?: string
+}
+
+// PaginationResponse — forma estándar de las respuestas de findAll
+interface PaginationResponse<T> {
+  data: T[]
+  pagination: {
+    total: number
+    page: number
+    pageSize: number
+    nextCursor: string
+    pageCount: number
+  }
+}
+
+// BaseResponse<T> = T (alias, respuesta simple no paginada)
+// SessionResponse: { token: string; data: User }
+// ErrorResponse: { status: number; message: string }
 ```
 
-### 5.4 Servicio custom (`services/api/custom/UserService.ts`)
+### 3.5 Crear un servicio nuevo (genérico)
 
-Extiende `Service<User>` (endpoint `/users`) y agrega métodos de autenticación que no siguen el patrón CRUD genérico:
+```ts
+// src/api/index.ts
+import Service from '@/sdk/core/Service'
+import Role from '@/models/entities/Role'
 
-- `login({ username, password, onUnauthorized })` → `POST /auth/login`
-- `signUp({ payload })` → `POST /auth/signup`
-- `profile()` → `GET /auth/profile`
+export const roleService = new Service<Role>({ endpoint: 'roles' })
+```
 
-### 5.5 Manejo de errores (`utils/errorResponse.ts`)
+### 3.6 Servicio custom (extendiendo `Service`)
 
-Función `errorResponse({ error, alert })` que normaliza cualquier error (Axios o nativo de JS) a un objeto `{ status, message }`, distinguiendo:
-- Error de respuesta del servidor (con `status`/`message` del backend).
-- Error de red (sin respuesta) → `status: 0`, mensaje genérico de conexión.
-- Error de JS puro.
+Cuando un recurso necesita endpoints no-CRUD (ej. auth), se extiende la clase y se reutiliza `this.axios`:
 
-Por defecto muestra un `toast.error` (desactivable con `alert: false`). Se usa en los `catch` de las vistas (por ejemplo, al guardar formularios).
+```ts
+// src/api/custom/UserService.ts
+export default class UserService extends Service<User> {
+  constructor() {
+    super({ origin: sdkSettings.apiService, endpoint: '/users' })
+  }
 
----
+  async login({ username, password, onUnauthorized }) {
+    const res = await this.axios.post<SessionResponse>(
+      '/auth/login',
+      { username, password },
+      { onUnauthorized }
+    )
+    return res.data
+  }
 
-## 6. Hooks de datos (capa de integración con TanStack Query)
+  async signUp({ payload }) {
+    const res = await this.axios.post<SessionResponse>('/auth/signup', payload)
+    return res.data
+  }
 
-Estos hooks envuelven TanStack Query para estandarizar el consumo de los `Service`.
-
-### 6.1 `useFindAll` (`hooks/core/useFindAll.ts`)
-
-Hook para listados paginados:
-- Normaliza `queryKey` (string o array) y serializa `queryParams` para generar una `finalQueryKey` estable (evita refetch innecesario por referencias de objeto distintas con el mismo contenido).
-- Expone, además del resultado estándar de `useQuery`, helpers de manipulación optimista de caché: `addItemInCache`, `updateItemInCache`, `removeItemInCache`, `emptyCache`.
-- Devuelve un valor "seguro" por defecto (`EMPTY_PAGINATION`) cuando la caché aún no tiene datos.
-
-### 6.2 `useInfiniteFindAll` (`hooks/core/useInfiniteFindAll.ts`)
-
-Variante para scroll infinito, basada en `useInfiniteQuery`. Misma filosofía de `queryKey` estable y helpers de caché, mapeando sobre `pages` en lugar de un único arreglo `data`.
-
-### 6.3 `useCrud` (`hooks/core/useCrud.ts`)
-
-Hook que expone mutaciones CRUD completas para una entidad (`create`, `update`, `delete`, `restore`), cada una invalidando automáticamente la `queryKey` asociada al éxito. También expone:
-- `useFindById`: `useQuery` habilitado solo si hay un `id`, para precargar datos en modales de edición.
-- `useFindByPath` (alias `useFindBy`): búsqueda por un `path` custom.
-- Flags de estado (`isCreating`, `isUpdating`, etc.) y errores por operación.
-
-### 6.4 `useQueryParams` (`hooks/core/useQueryParams.ts`)
-
-Hook para sincronizar estado con parámetros de la URL (`URLSearchParams`), sin depender de una librería de ruteo específica: expone `params`, `setUrlParam`, `removeUrlParam`, `setUrlParams`, y escucha el evento `popstate` para mantenerse sincronizado con la navegación del navegador.
-
-### 6.5 `useRecoilStorage` / `localStorageEffectWithZod` (`hooks/core/useRecoilStorage.ts`)
-
-- `localStorageEffectWithZod`: *effect* de Recoil que persiste el estado de un átomo en `localStorage`, **cifrado con AES** (`crypto-js`, usando `appSettings.secretKey`) y validado con un esquema **Zod** al leerlo (si la validación falla, se descarta el valor corrupto/alterado).
-- `dynamicRecoilFamily`: `atomFamily` de Recoil que crea un átomo por cada `key` string, usando el effect anterior.
-- `useRecoilStorage(key, defaultValue)`: hook de conveniencia que expone `[state, setState]` como `useState`, inicializando con `defaultValue` si no hay valor persistido.
-- Uso actual: persistir el texto de búsqueda del header (`searchRecoil`, en `constants/recoil.ts`).
+  async profile() {
+    const res = await this.axios.get<User>('/auth/profile')
+    return res.data
+  }
+}
+```
 
 ---
 
-## 7. Modelos y tipado (`models/`)
+## 4. Hooks (`src/hooks`)
 
-### 7.1 Núcleo (`models/api/core/`)
+### 4.1 `useFindAll` — listado paginado (`hooks/core/useFindAll.ts`)
 
-- **`_BaseEntity.ts`**: interfaz base que todas las entidades extienden (`id`, `name`, `createdAt`, `updatedAt`, `deletedAt`, todos opcionales/readonly).
-- **`PaginationResponse.ts`**: forma estándar de una respuesta paginada (`data: T[]`, `pagination: { total, page, pageSize, nextCursor, pageCount }`).
-- **`BaseResponse.ts`**: alias de tipo (`BaseResponse<T> = T`) para respuestas de un único recurso.
-- **`AbstractService.ts`**: descrito en la sección 5.1.
+Envuelve `useQuery` de React Query sobre `service.findAll`.
 
-### 7.2 Entidades (`models/api/entities/`)
+```ts
+const { data, isLoading, addItemInCache, updateItemInCache, removeItemInCache, emptyCache }
+  = useFindAll<Role>({
+    service: roleService,
+    queryKey: queryKeys.roles,     // string | string[]
+    queryParams: { page: 1, size: 15 }, // se pasan como query params HTTP
+    endpoint: 'activos',           // opcional: override del endpoint base
+  })
+```
 
-- **`User.ts`**: `username`, `surname`, `email`, `password`, `role?` (extiende `BaseEntity`, que ya aporta `name`).
-- **`Role.ts`**: `name: RoleName`, `permissions: Permissions[]`, `active?`.
-- **`Permissions.ts`**: `path`, `method?` (`GET | POST | PUT | DELETE`), `title?`.
+- `queryKey` final = `[...queryKey, endpoint ?? null, JSON.stringify(queryParams)]` (memoizado), así cada combinación de filtros/paginación tiene su propio cache.
+- Expone helpers de **actualización optimista del cache** sin refetch: `addItemInCache`, `updateItemInCache(id, updater)`, `removeItemInCache(id)`, `emptyCache()`.
+- Acepta cualquier opción estándar de `useQuery` (`enabled`, `staleTime`, etc.) vía spread.
 
-### 7.3 Otros modelos
+### 4.2 `useCrud` — mutaciones + queries puntuales (`hooks/core/useCrud.ts`)
 
-- **`SessionResponse.ts`**: `{ token, data: User }` — respuesta de login/signup.
-- **`ErrorResponse.ts`**: `{ status, message }` — forma esperada del error del backend.
-- **`SessionType.ts`**: contrato del contexto de sesión (perfil, funciones de login/signup/logout, flags de carga).
-- **`app/menu.ts`**: `MenuItem` / `SubMenuItem` — estructura del menú de navegación.
-- **`photos/AvatarUpload.ts`** y **`photos/UploadMedia.ts`**: extienden `UploadFile` de Ant Design para el manejo de imágenes (avatar único vs. galería múltiple).
+```ts
+const crud = useCrud<Role>({ service: roleService, queryKey: queryKeys.roles })
 
----
+await crud.create({ payload })
+await crud.update({ id, payload })
+await crud.delete({ id })
+await crud.restore({ id })
 
-## 8. Componentes y UI reutilizable
+crud.isCreating / crud.isUpdating / crud.isDeleting / crud.isRestoring
+crud.createError / crud.updateError / crud.deleteError / crud.restoreError
 
-### 8.1 `SelectApi` (`components/core/SelectApi.tsx`)
+const { data, isLoading } = crud.useFindById({ id: editingId }) // enabled: !!id
+const { data } = crud.useFindByPath({ path: 'me/notifications' })
+```
 
-Componente `<Select>` de Ant Design genérico y reutilizable para **búsqueda remota paginada** contra cualquier `AbstractService`:
-- Búsqueda con *debounce* de 400ms (`lodash.debounce`).
-- Carga diferida: solo dispara la consulta cuando el dropdown se abre por primera vez (`onDropdownVisibleChange` → `loaded`).
-- Soporta un `value` seleccionado que no esté en la página actual de resultados (lo inyecta como opción adicional).
-- `renderOption` permite personalizar la etiqueta mostrada por entidad.
-- Usado actualmente en `DashboardView` para seleccionar el `Role` de un usuario.
+- Cada mutación invalida automáticamente `queryKey` en `onSuccess` (refetch del listado).
+- `onUnauthorized`/`onForbidden` se pueden definir a nivel de hook (aplican a todas las operaciones) o sobreescribir por llamada individual.
 
-### 8.2 `AvatarUploader` (`ui/AvatarUploader.tsx`)
+### 4.3 `useInfiniteFindAll` — scroll infinito (`hooks/core/useInfiniteFindAll.ts`)
 
-Selector de imagen de avatar único con vista previa (usa `URL.createObjectURL`), validación de tipo (`image/*`) y tamaño máximo (3MB). Evita la subida automática (`beforeUpload` retorna `false`) para que el envío se controle manualmente desde el formulario padre.
+Igual a `useFindAll` pero sobre `useInfiniteQuery`. Requiere `getNextPageParam` (obligatorio) y opcionalmente `initialPageParam`. Expone los mismos helpers de cache (`addItemInCache` inserta en la primera página, etc.).
 
-### 8.3 `Media` (`ui/Media.tsx`)
+```ts
+const { data, fetchNextPage, hasNextPage } = useInfiniteFindAll<User>({
+  service: userService,
+  queryKey: 'users-infinite',
+  queryParams: { size: 20 },
+  getNextPageParam: (lastPage) =>
+    lastPage.pagination.page < lastPage.pagination.pageCount
+      ? { page: lastPage.pagination.page + 1 }
+      : undefined,
+})
+```
 
-Componente de galería de imágenes múltiples con soporte de arrastrar y soltar (`Dragger` de Ant Design), integrado como `Form.Item` (`name="imageUrl"`). Permite modo de solo vista previa o modo editable (con eliminación *soft* mediante la bandera `deleted`, útil para no perder el registro de archivos existentes que se desean quitar al guardar). Límite configurable de imágenes visibles (`maxVisible`).
+### 4.4 `useQueryParams` — sincronización con la URL (`hooks/core/useQueryParams.ts`)
 
-### 8.4 `OutletContainer` / `OutletMenu` (`ui/outlet/`)
+Hook type-safe para leer/escribir parámetros de query string permitidos:
 
-Descritos en la sección 4.5 y 4.6. Implementan el layout principal, el guard de acceso por ruta, el header con buscador, y el menú lateral responsivo (desktop/mobile) con logout integrado.
+```ts
+const { params, setUrlParam, removeUrlParam, setUrlParams } =
+  useQueryParams(['search', 'page'] as const)
 
-### 8.5 Vistas de error (`views/ForbiddenView.tsx`, `views/NotFoundView.tsx`)
+params.search       // string | null
+setUrlParam('page', '2')
+setUrlParams({ search: 'juan', page: '1' }, { replace: true })
+removeUrlParam('search')
+```
 
-Pantallas simples de error 401/403 ("Forbidden") y 404 ("Not Found"), con botón de regreso en el caso de `ForbiddenView`.
+Se re-sincroniza en eventos `popstate` (botón atrás/adelante del navegador).
 
----
+### 4.5 `useRecoilStorage` — estado persistente cifrado (`hooks/core/useRecoilStorage.ts`)
 
-## 9. Vistas de negocio (CRUD)
+Combina `recoil` (`atomFamily`) + `zod` + `crypto-js` (AES) para persistir estado en `localStorage` de forma **cifrada** con `sdkSettings.secretKey`.
 
-Las tres vistas principales (`RolesView`, `PermissionsView`, `DashboardView` —gestión de usuarios—) comparten un mismo patrón:
+```ts
+const [search, setSearch] = useRecoilStorage<string | undefined>('search', '')
+```
 
-1. Estado de paginación (`params`) sincronizado con `useFindAll`.
-2. Un `Modal` de Ant Design con un `Form` para crear/editar.
-3. `useCrud` para las mutaciones, con invalidación automática de caché tras cada operación.
-4. Columnas de tabla con una columna de "Acciones" cuya visibilidad depende del rol/jerarquía del usuario autenticado frente al registro (para evitar, por ejemplo, que un rol edite registros de mayor jerarquía).
+Internamente valida el valor deserializado con un `ZodType` (por defecto `z.unknown()`); si la validación falla o el descifrado falla, limpia la clave corrupta del storage. Uso real en el proyecto: `searchRecoil` (`constants/recoil.ts`) para el buscador del layout.
 
-### 9.1 `RolesView` (`views/roles/RolesView.tsx`)
+### 4.6 `useSession` (`hooks/useSession.ts`)
 
-- Lista roles paginados (`roleService`) y carga **todos** los permisos disponibles (`permissionService`, `size: 1000`) para poblar el `<Select mode="multiple">` de permisos del formulario.
-- Al editar, usa `crud.useFindById` para traer el detalle del rol y sincroniza el formulario con un `useEffect` reactivo a la llegada de los datos (patrón corregido para evitar condiciones de carrera entre el montaje del formulario y la resolución asíncrona de la petición).
-- La columna "Acciones" oculta las opciones de edición cuando el registro es el rol raíz (`id === 1`) o cuando el rol del registro tiene mayor jerarquía que el rol del usuario autenticado.
-- El botón "Activar/Desactivar" hace un `update` optimista invirtiendo el flag `active`, limpiando explícitamente los campos de auditoría (`createdAt`, `updatedAt`, `deletedAt`, `id`) del payload antes de enviarlo.
-
-### 9.2 `PermissionsView` (`views/permissions/PermissionsView.tsx`)
-
-- Lista de permisos (método HTTP, ruta, título) generados típicamente por el backend a partir de sus endpoints.
-- Solo permite **editar el título** (`title`) de un permiso existente; no expone creación ni borrado desde esta vista (los permisos se asumen generados/sincronizados por el backend).
-
-### 9.3 `DashboardView` (`views/dashboard/DashboardView.tsx`)
-
-Actúa como la vista de **gestión de usuarios** (a pesar del nombre "Dashboard"):
-- CRUD completo de usuarios, con selección de rol vía `SelectApi`.
-- Reglas de visibilidad de acciones: no se puede editar el usuario "super admin" (`role.id === 1`), no se puede editar el propio usuario autenticado desde esta tabla, y no se puede editar un usuario cuyo rol tenga mayor jerarquía que el del usuario autenticado.
-- El campo `password` en edición es opcional (solo se envía si el usuario lo completa, permitiendo dejarlo sin cambios).
-
-### 9.4 `LoginView` (`views/login/LoginView.tsx`)
-
-Pantalla de autenticación con dos pestañas (Ant Design `Tabs`):
-- **Login**: usuario + contraseña, delega en `useSession().login` y redirige mediante `saveSession` al obtener la respuesta.
-- **Registro**: formulario con validaciones de formato de correo y una política de contraseña vía *regex* (mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un carácter especial), más confirmación de contraseña con validador cruzado (`dependencies`).
-
----
-
-## 10. Estilos y tematización
-
-- **`config/antd.ts`**: `ThemeConfig` de Ant Design centralizado — define paleta de color primario/secundario, radios de borde, tipografía base y estilos por componente (`Input`, `Select`, `Table`, `Modal`, `Button`, `Tooltip`). Se inyecta globalmente vía `ConfigProvider` en `AppOutlet`.
-- **Tailwind CSS**: usado de forma utilitaria directamente en el JSX de las vistas y componentes (`styles/index.css` como entrada, más hojas específicas en `styles/components/` para animaciones, scroll personalizado y ajustes puntuales sobre componentes de Ant Design).
+```ts
+const { profile, login, signup, saveSession, logout, loading } = useSession()
+```
+Lee el `SessionContext`; lanza error si se usa fuera de `<SessionProvider>`.
 
 ---
 
-## 11. Variables de entorno
+## 5. Contexto de sesión (`src/context`)
 
-Definidas en `types/vite-env.d.ts` y consumidas mediante `import.meta.env`:
+`SessionProvider` (`context/providers/SessionProvider.tsx`) es el corazón de autenticación:
 
-| Variable | Uso |
+- `useQuery(queryKeys.session)` → llama `userService.profile()` **solo si hay token** (`enabled: !!token`), sin reintentos.
+- `loginMutation` / `signupMutation` envuelven `userService.login` / `userService.signUp`.
+- `saveSession({ token, data })`: guarda el token en `sdkSettings`, setea el cache de `session` manualmente (evita un refetch extra) y navega a `/dashboard`.
+- `logout()`: borra token, limpia cache de sesión, notifica con `antd message`, redirige a `/login` y hace `window.location.reload()` (limpia todo el estado de memoria/Recoil).
+- Efecto de guardia: si terminó de cargar y **no hay token** y no estás en `/login`, redirige a `/login`.
+- Mientras carga el perfil con token presente, muestra una pantalla de "Cargando sesión...".
+
+`SessionType` (contrato expuesto por el contexto):
+```ts
+interface SessionType {
+  profile?: User
+  login: (payload: { username; password; onUnauthorized? }) => Promise<SessionResponse>
+  signup: (payload: User) => Promise<SessionResponse>
+  saveSession: (session: SessionResponse) => void
+  logout: () => void
+  loading: { profile: boolean; login: boolean; signup: boolean }
+}
+```
+
+---
+
+## 6. Modelos de dominio (`src/models/entities`)
+
+```ts
+interface User extends BaseEntity {
+  username: string
+  surname: string
+  email: string
+  password: string
+  role?: Role
+}
+
+interface Role extends BaseEntity {
+  name: RoleName          // 'ADMIN' | 'USER' | '*'
+  permissions: Permissions[]
+  active?: boolean
+}
+
+interface Permissions {
+  id?: number
+  path: string
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  title?: string
+}
+```
+
+Todas heredan (o pueden heredar) de `BaseEntity` del SDK, lo que las hace compatibles con `Service<Entity>` y los hooks genéricos sin escribir tipado adicional.
+
+---
+
+## 7. Enrutamiento y control de acceso
+
+- **Generouted** (`@generouted/react-router/lazy`) genera las rutas a partir de `src/pages/**`. Cada archivo en `pages/` es un wrapper delgado que importa la vista real de `src/views/`.
+- `RoutesEnum` (`enum/routes..app.ts`) centraliza los paths (`/`, `/login`, `/dashboard`, `/roles`, `/permissions`).
+- `routesConfig` (`config/routes.app.ts`) define, por ruta: `auth` (requiere sesión), `roles` permitidos, `permission`, `title` (usado como encabezado de página) y `search` (si el layout muestra el buscador).
+- `isAuthorized(role, route)` (`utils/permission.app.ts`) evalúa si el rol del usuario tiene acceso a la ruta.
+- `OutletContainer` (`ui/outlet/OutletContainer.tsx`) es el guard central: si la ruta no existe en `routesConfig` → `NotFoundView`; si la ruta es pública pero hay sesión iniciada → `ForbiddenView`; si requiere auth, renderiza `OutletMenu` + el contenido. *(Nota: la línea `if (!allowed) return <ForbiddenView />` está comentada en el código actual, por lo que el chequeo de rol por ruta no se aplica todavía en runtime — queda como TODO.)*
+- `menu.ts` (`config/menu.ts`) define el menú lateral (`MenuItem[]`) con íconos de `lucide-react`, filtrado por `authorized` (roles) usando `buildMenuItemsForAntd`.
+
+---
+
+## 8. Componentes reutilizables clave
+
+### 8.1 `SelectApi<Entity>` (`components/core/SelectApi.tsx`)
+
+`<Select>` de antd con **búsqueda remota** genérica contra cualquier `Service`:
+
+```tsx
+<SelectApi<Role>
+  service={roleService}
+  queryKey={queryKeys.roles}
+  placeholder="Selecciona un rol"
+  querySearch={(text) => ({ search: text })}   // opcional: mapea texto -> query params
+  renderOption={(role) => role.name}             // opcional: custom label
+  value={selectedRole}
+  onChange={(role) => setSelectedRole(role)}
+/>
+```
+
+- Debounce de 400ms sobre el texto de búsqueda (`lodash.debounce`).
+- Carga diferida: solo hace fetch al abrir el dropdown (`onDropdownVisibleChange`).
+- Devuelve la **entidad completa** seleccionada (no solo el id) vía `onChange`.
+
+### 8.2 `Media` / `AvatarUploader` (`ui/Media.tsx`, `ui/AvatarUploader.tsx`)
+
+Manejo de subida de imágenes con `antd Upload.Dragger`, soporte multi-imagen con soft-delete (`deleted: true` en vez de remover del array) y preview con `URL.createObjectURL`. Se integran como `Form.Item` de antd (`name="imageUrl"`).
+
+### 8.3 `errorResponse` (`utils/errorResponse.ts`)
+
+Normaliza cualquier error (axios o nativo) a `{ status, message }` y opcionalmente dispara un toast:
+
+```ts
+try {
+  await crud.update({ id, payload })
+} catch (error) {
+  errorResponse({ error })              // muestra toast automáticamente
+  // errorResponse({ error, alert: false }) // solo retorna el objeto normalizado
+}
+```
+
+---
+
+## 9. `queryClient` y `queryKeys` (`config/queryClient.ts`)
+
+```ts
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+      staleTime: 1000 * 60 * 5,   // 5 min
+      gcTime: 1000 * 60 * 30,     // 30 min
+    },
+  },
+})
+
+export const queryKeys = {
+  session: ['session'],
+  users: ['users'],
+  roles: ['roles'],
+  permissions: ['permissions'],
+}
+```
+
+Se usa como fuente única de `queryKey` para evitar strings mágicos repetidos entre vistas.
+
+---
+
+## 10. Ejemplo end-to-end: CRUD de Roles
+
+`views/roles/RolesView.tsx` combina todo lo anterior:
+
+```tsx
+const { data: response, isLoading } = useFindAll<Role>({
+  queryKey: queryKeys.roles,
+  service: roleService,
+  queryParams: { page: 1, size: 15 },
+})
+
+const { data: permissionsResponse } = useFindAll<Permissions>({
+  queryKey: queryKeys.permissions,
+  service: permissionService,
+  queryParams: { page: 0, size: 1000 },
+})
+
+const crud = useCrud<Role>({ service: roleService, queryKey: queryKeys.roles })
+const { data: roleDetail } = crud.useFindById({ id: editingId })
+
+// Crear/editar
+await crud.create({ payload: { name, permissions: ids.map(id => ({ id })) } })
+await crud.update({ id: editingId, payload })
+
+// Tabla + paginación server-side con antd <Table onChange>
+<Table
+  dataSource={response?.data}
+  pagination={{
+    current: response?.pagination.page,
+    pageSize: response?.pagination.pageSize,
+    total: response?.pagination.total,
+  }}
+  onChange={(pagination) => setParams(prev => ({ ...prev, page: pagination.current, size: pagination.pageSize }))}
+/>
+```
+
+Este mismo patrón se repite en `DashboardView.tsx` (usuarios) y `PermissionsView.tsx` (permisos), cambiando únicamente el `Service` y las columnas de la tabla — es la prueba de que el SDK + hooks generalizan bien cualquier recurso CRUD nuevo.
+
+---
+
+## 11. Cómo agregar un nuevo módulo CRUD (receta)
+
+1. **Modelo**: crear `src/models/entities/MiEntidad.ts extends BaseEntity`.
+2. **Servicio**: `export const miEntidadService = new Service<MiEntidad>({ endpoint: 'mi-entidad' })` en `src/api/index.ts`.
+3. **Query key**: agregar `miEntidad: ['mi-entidad']` en `config/queryClient.ts`.
+4. **Ruta**: agregar entrada en `RoutesEnum` + `routesConfig` (`auth`, `roles`, `title`) y opcionalmente en `menu.ts`.
+5. **Página**: crear `src/pages/mi-entidad/index.tsx` que renderiza `src/views/mi-entidad/MiEntidadView.tsx`.
+6. **Vista**: usar `useFindAll` (listado) + `useCrud` (mutaciones) + `antd Table/Form/Modal`, siguiendo el patrón de `RolesView.tsx`.
+
+No hace falta tocar el SDK ni los hooks — son 100% genéricos sobre `BaseEntity`.
+
+---
+
+## 12. Dependencias identificadas (por imports, sin `package.json`)
+
+| Paquete | Uso |
 |---|---|
-| `VITE_API_SERVICE` | URL base de la API consumida por `AppSettings.apiService` (usada por defecto en cada `Service`) |
-| `VITE_SECRET_KEY` | Clave usada para el cifrado AES de datos persistidos en `localStorage` (Recoil) y expuesta también vía `AppSettings.secretKey` / `Environment.getSecretKey` |
-
-> Estas variables deben definirse en un archivo `.env` (no incluido en este paquete de código) en la raíz del proyecto, siguiendo la convención de Vite (prefijo `VITE_`).
-
----
-
-## 12. Cómo probar el proyecto
-
-Repositorio de referencia proporcionado para pruebas:
-
-```
-https://github.com/Loza64/spring-app-template.git
-```
-
-Pasos generales sugeridos (ajustar según el `package.json` real del repositorio, no incluido en este paquete de código analizado):
-
-```bash
-git clone https://github.com/Loza64/spring-app-template.git
-cd spring-app-template
-```
-
-Crear un archivo `.env` en la raíz con, como mínimo:
-
-```
-VITE_API_SERVICE=http://localhost:<puerto-del-backend>
-VITE_SECRET_KEY=<una-clave-cualquiera-para-cifrado-local>
-```
-
-Levantar el servidor de desarrollo:
-
-```bash
-npm run dev
-```
-
-Esto requiere que el backend (Spring Boot, según el nombre del repositorio) esté corriendo y exponga, como mínimo, los endpoints usados por el frontend:
-
-- `POST /api/auth/login`
-- `POST /api/auth/signup`
-- `GET /api/auth/profile`
-- `GET/POST/PUT/DELETE /api/roles[/:id]`
-- `GET/PUT /api/permissions[/:id]`
-- `GET/POST/PUT/DELETE /api/users[/:id]` (usado desde `DashboardView`, aunque no se identificó un `userService` CRUD genérico explícito más allá de los métodos de autenticación — ver nota en la sección de servicios)
+| `react`, `react-dom` | Base |
+| `@generouted/react-router/lazy`, `react-router-dom` | Enrutamiento por archivos |
+| `@tanstack/react-query` | Server state / cache |
+| `axios` | Cliente HTTP |
+| `antd`, `@ant-design/icons` | UI Kit |
+| `recoil` | Estado global persistente |
+| `zod` | Validación de esquemas (Recoil storage) |
+| `crypto-js` | Cifrado AES de localStorage |
+| `react-toastify` | Notificaciones globales (errores HTTP) |
+| `lucide-react` | Íconos del menú |
+| `lodash.debounce` | Debounce de búsqueda en `SelectApi` |
+| `dayjs` | Fechas (locale `es`) |
+| Tailwind (utility classes) | Estilos |
+| Vite (`import.meta.env`, `vite-env.d.ts`) | Bundler/entorno |
 
 ---
-
-## 13. Resumen de responsabilidades por carpeta (referencia rápida)
-
-| Carpeta | Responsabilidad principal |
-|---|---|
-| `pages/` | Enrutamiento basado en archivos (generouted) |
-| `views/` | Pantallas completas con lógica de negocio |
-| `ui/` | Componentes visuales reutilizables no atados a una entidad |
-| `components/core/` | Componentes genéricos reutilizables entre entidades |
-| `hooks/core/` | Integración genérica con TanStack Query/Recoil |
-| `hooks/useSession.ts` | Acceso al contexto de sesión |
-| `services/core/` | Cliente CRUD genérico (`Service`) |
-| `services/api/` | Instancias concretas de servicios por entidad |
-| `services/utils/` | Configuración de Axios e interceptores |
-| `models/api/core/` | Contratos y tipos base compartidos |
-| `models/api/entities/` | Tipado de entidades de dominio |
-| `config/` | Configuración estática (rutas, menú, tema, entorno) |
-| `context/` | Contexto de sesión de usuario |
-| `enum/` | Enumeraciones de rutas y roles |
-| `utils/` | Utilidades puras (errores, permisos) |
-| `constants/` | Constantes compartidas (claves de Recoil, etc.) |

@@ -3,12 +3,12 @@ import { Avatar, Input, Spin } from 'antd'
 import { MenuSquare } from 'lucide-react'
 import type React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import OutletMenu from './OutletMenu'
 import { useSession } from '@/hooks/useSession'
 import ForbiddenView from '@/views/ForbiddenView'
 import { searchRecoil } from '@/constants/recoil'
-import type { RoutesEnum } from '@/enum/routes..app'
+import { RoutesEnum } from '@/enum/routes..app'
 import { routesConfig } from '@/config/routes.app'
 import { isAuthorized } from '@/utils/permission.app'
 import NotFoundView from '@/views/NotFoundView'
@@ -26,44 +26,46 @@ export default function OutletContainer({
 
   const { profile: user, loading } = useSession()
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const pathname = location.pathname as RoutesEnum
+  const routeData = routesConfig[pathname]
 
   const role = user?.role?.name
-  const pathname = location.pathname as RoutesEnum
-
-  const findRoute = routesConfig[pathname]
-
-  const allowed = role && isAuthorized(role, pathname)
-
-  const pageInfo = useMemo(() => {
-    const routeData = routesConfig[pathname]
-
-    if (routeData) {
-      const { auth, title, search } = routeData
-      return { title, auth, search }
-    }
-
-    return { title: 'Unknnown', search: false, auth: false }
-  }, [pathname])
+  const allowed = useMemo(
+    () => (role ? isAuthorized(role, pathname) : false),
+    [role, pathname]
+  )
 
   useEffect(() => {
     setSearch('')
   }, [location.pathname, setSearch])
 
+  useEffect(() => {
+    if (routeData && !routeData.auth && user) {
+      navigate(RoutesEnum.DASHBOARD, { replace: true })
+    }
+  }, [routeData, user, navigate])
+
   const toggleMenu = useCallback(() => {
     setCollapsed((previous) => !previous)
   }, [])
 
-  if (!findRoute) return <NotFoundView />
+  if (!routeData) return <NotFoundView />
 
-  if (!findRoute.auth && user)
+  if (!routeData.auth) {
+    return user ? null : children
+  }
+
+  if (loading.profile) {
     return (
-      <ForbiddenView details="No tienes permiso de acceder a esta area mientras tengas al sesión iniciada" />
+      <div className="flex h-screen items-center justify-center">
+        <Spin indicator={<LoadingOutlined spin />} size="large" />
+      </div>
     )
+  }
 
-  if (!findRoute.auth) return children
-
-  console.log({ allowed, user })
-  //if (!allowed) return <ForbiddenView />
+  if (!allowed) return <ForbiddenView />
 
   return (
     <>
@@ -77,10 +79,10 @@ export default function OutletContainer({
         {!isMobile && (
           <div className="flex shrink-0 items-center justify-between gap-4 px-9 py-4">
             <div className="text-primary flex flex-col">
-              <span className="text-3xl font-extrabold">{pageInfo.title}</span>
+              <span className="text-3xl font-extrabold">{routeData.title}</span>
             </div>
 
-            {pageInfo.search && (
+            {routeData.search && (
               <Input
                 placeholder="Buscar"
                 prefix={<SearchOutlined className="text-blue-500" />}
@@ -115,13 +117,8 @@ export default function OutletContainer({
               <Avatar
                 size={38}
                 className="border-primary m-2 border-2 bg-blue-100 font-semibold text-blue-600"
-                /*src={user?.picture?.url} */
               >
-                {
-                  /*!user?.picture && */ (
-                    user?.username?.[0] ?? '?'
-                  ).toUpperCase()
-                }
+                {(user?.username?.[0] ?? '?').toUpperCase()}
               </Avatar>
             )}
           </div>

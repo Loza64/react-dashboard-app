@@ -97,7 +97,7 @@ export default class Service<
   }
 
   async restore(params: RestoreParams): Promise<void> {
-    await this.axios.delete(
+    await this.axios.patch(
       this.getUrl(params.endpoint, `${params.id}/restore`),
       this.withMeta(params.config)
     )

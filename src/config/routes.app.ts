@@ -1,4 +1,4 @@
-import type { RoleName } from '@/enum/role'
+import { roles, type RoleName } from '@/enum/role'
 import { RoutesEnum } from '@/enum/routes..app'
 
 type RouteConfig = {
@@ -11,7 +11,7 @@ type RouteConfig = {
 
 export const routesConfig: Record<RoutesEnum, RouteConfig> = {
   [RoutesEnum.ROOT]: {
-    auth: true,
+    auth: false,
     roles: [],
     permission: ['*'],
     title: 'Inicio',
@@ -26,21 +26,21 @@ export const routesConfig: Record<RoutesEnum, RouteConfig> = {
   },
   [RoutesEnum.DASHBOARD]: {
     auth: true,
-    roles: ['*'],
+    roles: [roles.super_admin, roles.admin, roles.all],
     permission: ['*'],
     title: 'Dashboard',
     search: true,
   },
   [RoutesEnum.ROLES]: {
     auth: true,
-    roles: ['*'],
+    roles: [roles.super_admin, roles.admin],
     permission: ['*'],
     title: 'Roles',
     search: true,
   },
   [RoutesEnum.PERMISSIONS]: {
     auth: true,
-    roles: ['*'],
+    roles: [roles.super_admin],
     permission: ['*'],
     title: 'Permisos',
     search: true,
