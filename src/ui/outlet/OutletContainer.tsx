@@ -13,6 +13,7 @@ import { routesConfig } from '@/config/routes.app'
 import { isAuthorized } from '@/utils/permission.app'
 import NotFoundView from '@/views/NotFoundView'
 import useRecoilStorage from '@/hooks/core/useRecoilStorage'
+import { matchRoute } from '@/utils/route-matcher'
 
 export default function OutletContainer({
   children,
@@ -28,18 +29,26 @@ export default function OutletContainer({
   const location = useLocation()
   const navigate = useNavigate()
 
-  const pathname = location.pathname as RoutesEnum
-  const routeData = routesConfig[pathname]
+  const currentPath = location.pathname
+
+  const matchedRouteKey = useMemo(() => {
+    return (Object.keys(routesConfig) as RoutesEnum[]).find((routeKey) =>
+      matchRoute(routeKey, currentPath)
+    )
+  }, [currentPath])
+
+  const routeData = matchedRouteKey ? routesConfig[matchedRouteKey] : undefined
 
   const role = user?.role?.name
+
   const allowed = useMemo(
-    () => (role ? isAuthorized(role, pathname) : false),
-    [role, pathname]
+    () => (role && matchedRouteKey ? isAuthorized(role, currentPath) : false),
+    [role, currentPath, matchedRouteKey]
   )
 
   useEffect(() => {
     setSearch('')
-  }, [location.pathname, setSearch])
+  }, [currentPath, setSearch])
 
   useEffect(() => {
     if (routeData && !routeData.auth && user) {
