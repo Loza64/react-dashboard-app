@@ -10,6 +10,7 @@ import { userService } from '@/api'
 import SessionResponse from '@/sdk/model/response/SessionResponse'
 import User from '@/models/entities/User'
 import SessionType from '@/models/app/context/SessionType'
+import errorResponse from '@/utils/errorResponse'
 
 const service = userService
 const settings = sdkSettings
@@ -39,23 +40,31 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
   })
 
   const saveSession = useCallback(
-    ({ token, data }: SessionResponse) => {
+    ({ token, data, refreshToken }: SessionResponse) => {
       settings.token = token
+      settings.refreshToken = refreshToken
       queryClient.setQueryData(queryKeys.session, data)
       navigate('/dashboard', { replace: true })
     },
     [navigate, queryClient]
   )
 
-  const logout = useCallback(() => {
-    settings.removeToken()
-    queryClient.setQueryData(queryKeys.session, null)
+  const logout = useCallback(async () => {
+    try {
+      const refreshToken = settings.refreshToken
+      if (refreshToken) {
+        await service.logout({ refreshToken })
+        settings.removeRefreshToken()
+      }
+      settings.removeToken()
+      queryClient.setQueryData(queryKeys.session, null)
+      messageApi.info('Sesión cerrada correctamente.')
 
-    messageApi.info('Sesión cerrada correctamente.')
-
-    if (location.pathname !== '/login') {
-      navigate('/login', { replace: true })
-      window.location.reload()
+      if (location.pathname !== '/login') {
+        navigate('/login', { replace: true })
+      }
+    } catch (error) {
+      errorResponse({ error })
     }
   }, [messageApi, navigate, location.pathname, queryClient])
 

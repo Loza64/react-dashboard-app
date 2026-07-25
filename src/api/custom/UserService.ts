@@ -41,4 +41,12 @@ export default class UserService extends Service<User> {
     const res = await this.axios.get<User>('/auth/profile')
     return res.data
   }
+
+  public async logout({
+    refreshToken,
+  }: {
+    refreshToken: string
+  }): Promise<void> {
+    await this.axios.post<void>('/auth/logout', { refreshToken })
+  }
 }

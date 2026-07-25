@@ -13,7 +13,7 @@ export default class SdkSettings {
 
   get apiService(): string {
     try {
-      const url = import.meta.env.VITE_API_SERVICE
+      const url = new URL(import.meta.env.VITE_API_SERVICE).origin
       if (!url) throw new Error('VITE_API_SERVICE not defined in environment')
       return url
     } catch {
@@ -39,6 +39,26 @@ export default class SdkSettings {
       this.storage.removeItem('token')
     } catch (err) {
       console.warn('Failed to remove token from storage', err)
+    }
+  }
+
+  set refreshToken(value: string) {
+    try {
+      this.storage.setItem('refreshToken', value)
+    } catch (err) {
+      console.warn('Failed to set refreshToken in storage', err)
+    }
+  }
+
+  get refreshToken(): string | null {
+    return this.storage.getItem('refreshToken')
+  }
+
+  removeRefreshToken() {
+    try {
+      this.storage.removeItem('refreshToken')
+    } catch (err) {
+      console.warn('Failed to remove refreshToken from storage', err)
     }
   }
 

@@ -2,12 +2,32 @@ import { sdkSettings } from '@/sdk/core/SdkSettings'
 import { queryClient, queryKeys } from '@/config/queryClient'
 import axios, { type AxiosInstance } from 'axios'
 import { toast } from 'react-toastify'
+import type SessionResponse from '@/sdk/model/response/SessionResponse'
 
 const DEFAULT_TIMEOUT_MS = 60_000
 
 export interface AxiosInstanceParams {
   origin: string
   initPath: string
+}
+
+const logout = () => {
+  sdkSettings.removeToken()
+  sdkSettings.removeRefreshToken()
+  queryClient.setQueryData(queryKeys.session, null)
+  window.location.href = '/login'
+}
+
+const refreshAccessToken = async (origin: string): Promise<string> => {
+  const refreshToken = sdkSettings.refreshToken
+  if (!refreshToken) throw new Error('No refresh token available')
+  const { data } = await axios.post<SessionResponse>(
+    `${origin}/api/auth/refresh`,
+    { refreshToken }
+  )
+  sdkSettings.token = data.token
+  sdkSettings.refreshToken = data.refreshToken
+  return data.token
 }
 
 export const AxiosConfig = ({
@@ -33,20 +53,27 @@ export const AxiosConfig = ({
 
   instance.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
       const status = error?.response?.status
+      const originalRequest = error.config
 
-      const onUnauthorized = error.config?.onUnauthorized
-      const onForbidden = error.config?.onForbidden
+      const onUnauthorized = originalRequest?.onUnauthorized
+      const onForbidden = originalRequest?.onForbidden
 
-      if (status === 401) {
-        if (onUnauthorized) {
-          onUnauthorized()
-        } else {
-          toast.warning('Su sesión ha expirado')
-          sdkSettings.removeToken()
-          queryClient.setQueryData(queryKeys.session, null)
-          window.location.href = '/login'
+      if (status === 401 && !originalRequest?._retry) {
+        originalRequest._retry = true
+        try {
+          const newToken = await refreshAccessToken(origin)
+          originalRequest.headers.Authorization = `Bearer ${newToken}`
+          return instance(originalRequest)
+        } catch {
+          if (onUnauthorized) {
+            onUnauthorized()
+          } else {
+            toast.warning('Su sesión ha expirado')
+            logout()
+          }
+          return Promise.reject(error)
         }
       }
 

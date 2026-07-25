@@ -10,7 +10,7 @@ export default interface SessionType {
   }) => Promise<SessionResponse>
   signup: (payload: User) => Promise<SessionResponse>
   saveSession: (session: SessionResponse) => void
-  logout: () => void
+  logout: () => Promise<void>
   loading: {
     profile: boolean
     login: boolean

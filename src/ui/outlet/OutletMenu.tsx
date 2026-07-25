@@ -12,6 +12,7 @@ import {
   RightOutlined,
   SearchOutlined,
 } from '@ant-design/icons'
+import { useMutation } from '@tanstack/react-query'
 import {
   Avatar,
   Button,
@@ -95,15 +96,21 @@ export default function OutletMenu({
     [role, collapsed]
   )
 
+  const { mutateAsync: logoutMutate, isPending: closingSession } = useMutation({
+    mutationFn: () => logout(),
+  })
+
   const selectedKeys = useMemo(
     () => selectMenuKeys(location.pathname),
     [location.pathname]
   )
 
-  const handleLogout = () => logout()
+  const handleLogout = () => {
+    logoutMutate()
+  }
 
   const handleMenuClick = (key: string) => {
-    if (key === 'logout') return logout()
+    if (key === 'logout') return handleLogout()
     if (key === 'toggle') return openMenu()
     navigate(key)
   }
@@ -249,6 +256,7 @@ export default function OutletMenu({
                 danger
                 icon={<LogoutOutlined />}
                 onClick={handleLogout}
+                loading={closingSession}
                 block
                 className="flex items-center justify-center gap-2 text-sm font-medium text-red-600 transition-all hover:bg-red-50"
               >
