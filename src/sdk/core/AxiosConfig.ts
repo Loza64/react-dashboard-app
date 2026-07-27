@@ -1,6 +1,7 @@
+// AxiosConfig.ts
 import { sdkSettings } from '@/sdk/core/SdkSettings'
 import { queryClient, queryKeys } from '@/config/queryClient'
-import axios, { type AxiosInstance } from 'axios'
+import axios, { type AxiosInstance, type AxiosError } from 'axios'
 import { toast } from 'react-toastify'
 import type SessionResponse from '@/sdk/model/response/SessionResponse'
 
@@ -18,16 +19,83 @@ const logout = () => {
   window.location.href = '/login'
 }
 
-const refreshAccessToken = async (origin: string): Promise<string> => {
-  const refreshToken = sdkSettings.refreshToken
-  if (!refreshToken) throw new Error('No refresh token available')
-  const { data } = await axios.post<SessionResponse>(
-    `${origin}/api/auth/refresh`,
-    { refreshToken }
+let refreshPromise: Promise<string> | null = null
+
+const refreshAccessToken = (origin: string): Promise<string> => {
+  if (refreshPromise) return refreshPromise
+  refreshPromise = (async () => {
+    const refreshToken = sdkSettings.refreshToken
+    if (!refreshToken) throw new Error('No refresh token available')
+    const { data } = await axios.post<SessionResponse>(
+      `${origin}/api/auth/refresh`,
+      { refreshToken }
+    )
+    sdkSettings.token = data.token
+    sdkSettings.refreshToken = data.refreshToken
+    return data.token
+  })().finally(() => {
+    refreshPromise = null
+  })
+
+  return refreshPromise
+}
+
+const handleUnauthorized = async (
+  error: AxiosError,
+  origin: string,
+  instance: AxiosInstance
+) => {
+  const originalRequest = error.config!
+  if (originalRequest.isRetryAfterRefresh) return Promise.reject(error)
+  originalRequest.isRetryAfterRefresh = true
+  try {
+    const newToken = await refreshAccessToken(origin)
+    originalRequest.headers.Authorization = `Bearer ${newToken}`
+    return instance(originalRequest)
+  } catch {
+    if (originalRequest.onUnauthorized) {
+      originalRequest.onUnauthorized()
+    } else {
+      toast.warning('Su sesión ha expirado')
+      logout()
+    }
+    return Promise.reject(error)
+  }
+}
+
+const handleForbidden = (error: AxiosError) => {
+  const onForbidden = error.config?.onForbidden
+  if (onForbidden) {
+    onForbidden()
+  } else {
+    toast.warning('No tienes permiso para realizar esta petición')
+  }
+  return Promise.reject(error)
+}
+
+const attachRequestInterceptor = (instance: AxiosInstance) => {
+  instance.interceptors.request.use((config) => {
+    const token = sdkSettings.token
+    if (token) config.headers.Authorization = `Bearer ${token}`
+
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type']
+    }
+
+    return config
+  })
+}
+
+const attachResponseInterceptor = (instance: AxiosInstance, origin: string) => {
+  instance.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+      const status = error.response?.status
+      if (status === 401) return handleUnauthorized(error, origin, instance)
+      if (status === 403) return handleForbidden(error)
+      return Promise.reject(error)
+    }
   )
-  sdkSettings.token = data.token
-  sdkSettings.refreshToken = data.refreshToken
-  return data.token
 }
 
 export const AxiosConfig = ({
@@ -38,56 +106,7 @@ export const AxiosConfig = ({
     baseURL: `${origin}/${initPath}`,
     timeout: DEFAULT_TIMEOUT_MS,
   })
-
-  instance.interceptors.request.use((config) => {
-    const token = sdkSettings.token
-
-    if (token) config.headers.Authorization = `Bearer ${token}`
-
-    if (config.data instanceof FormData) {
-      delete config.headers['Content-Type']
-    }
-
-    return config
-  })
-
-  instance.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const status = error?.response?.status
-      const originalRequest = error.config
-
-      const onUnauthorized = originalRequest?.onUnauthorized
-      const onForbidden = originalRequest?.onForbidden
-
-      if (status === 401 && !originalRequest?._retry) {
-        originalRequest._retry = true
-        try {
-          const newToken = await refreshAccessToken(origin)
-          originalRequest.headers.Authorization = `Bearer ${newToken}`
-          return instance(originalRequest)
-        } catch {
-          if (onUnauthorized) {
-            onUnauthorized()
-          } else {
-            toast.warning('Su sesión ha expirado')
-            logout()
-          }
-          return Promise.reject(error)
-        }
-      }
-
-      if (status === 403) {
-        if (onForbidden) {
-          onForbidden()
-        } else {
-          toast.warning('No tienes permiso para realizar esta petición')
-        }
-      }
-
-      return Promise.reject(error)
-    }
-  )
-
+  attachRequestInterceptor(instance)
+  attachResponseInterceptor(instance, origin)
   return instance
 }
