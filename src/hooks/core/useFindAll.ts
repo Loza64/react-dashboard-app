@@ -1,4 +1,4 @@
-import AbstractService from '@/sdk/model/core/AbstractService'
+import { AbstractService } from '@/sdk/model/core/AbstractService'
 import BaseEntity from '@/sdk/model/entities/BaseEntity'
 import PaginationResponse from '@/sdk/model/response/PaginationResponse'
 import {
@@ -36,7 +36,6 @@ export type FindAllResult<Entity extends BaseEntity> = UseQueryResult<
 >
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
 const EMPTY_PAGINATION: PaginationResponse<never>['pagination'] = {
   total: 0,
   page: 1,
@@ -89,45 +88,48 @@ export const useFindAll = <Entity extends BaseEntity>({
     []
   )
 
+  const updateCacheData = useCallback(
+    (updater: (base: QueryData<Entity>) => QueryData<Entity>) => {
+      queryClient.setQueryData<QueryData<Entity>>(finalQueryKey, (old) =>
+        updater(getSafeCache(old))
+      )
+    },
+    [queryClient, finalQueryKey, getSafeCache]
+  )
+
   const addItemInCache = useCallback(
     (item: Entity) => {
-      queryClient.setQueryData<QueryData<Entity>>(finalQueryKey, (old) => {
-        const base = getSafeCache(old)
+      updateCacheData((base) => {
         if (base.data.some((i) => i.id === item.id)) return base
         return { ...base, data: [item, ...base.data] }
       })
     },
-    [queryClient, finalQueryKey, getSafeCache]
+    [updateCacheData]
   )
 
   const updateItemInCache = useCallback(
     (id: string | number, updater: (item: Entity) => Entity) => {
-      queryClient.setQueryData<QueryData<Entity>>(finalQueryKey, (old) => {
-        const base = getSafeCache(old)
-        return {
-          ...base,
-          data: base.data.map((item) =>
-            item.id === id ? updater(item) : item
-          ),
-        }
-      })
+      updateCacheData((base) => ({
+        ...base,
+        data: base.data.map((item) => (item.id === id ? updater(item) : item)),
+      }))
     },
-    [queryClient, finalQueryKey, getSafeCache]
+    [updateCacheData]
   )
 
   const removeItemInCache = useCallback(
     (id: string | number) => {
-      queryClient.setQueryData<QueryData<Entity>>(finalQueryKey, (old) => {
-        const base = getSafeCache(old)
-        return { ...base, data: base.data.filter((item) => item.id !== id) }
-      })
+      updateCacheData((base) => ({
+        ...base,
+        data: base.data.filter((item) => item.id !== id),
+      }))
     },
-    [queryClient, finalQueryKey, getSafeCache]
+    [updateCacheData]
   )
 
   const emptyCache = useCallback(() => {
-    queryClient.setQueryData<QueryData<Entity>>(finalQueryKey, getSafeCache())
-  }, [queryClient, finalQueryKey, getSafeCache])
+    updateCacheData(() => getSafeCache())
+  }, [updateCacheData, getSafeCache])
 
   return {
     ...hook,

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useFindAll } from '@/hooks/core/useFindAll'
 import debounce from 'lodash.debounce'
 import BaseEntity from '@/sdk/model/entities/BaseEntity'
-import AbstractService from '@/sdk/model/core/AbstractService'
+import { AbstractService } from '@/sdk/model/core/AbstractService'
 
 interface SelectApiProps<Entity extends BaseEntity> {
   service: AbstractService<Entity>

@@ -1,4 +1,4 @@
-import AbstractService from '@/sdk/model/core/AbstractService'
+import { AbstractService } from '@/sdk/model/core/AbstractService'
 import BaseEntity from '@/sdk/model/entities/BaseEntity'
 import PaginationResponse from '@/sdk/model/response/PaginationResponse'
 import {
@@ -111,77 +111,72 @@ const useInfiniteFindAll = <
     []
   )
 
-  const addItemInCache = useCallback(
-    (item: Entity) => {
+  const updateInfiniteCacheData = useCallback(
+    (
+      updater: (
+        base: InfiniteFindAllResult<Entity>
+      ) => InfiniteFindAllResult<Entity>
+    ) => {
       queryClient.setQueryData<InfiniteFindAllResult<Entity>>(
         finalQueryKey,
-        (old) => {
-          const base = getSafeCache(old)
-
-          if (base.pages.length === 0) return base
-
-          const alreadyExists = base.pages.some((page) =>
-            page.data.some((i) => i.id === item.id)
-          )
-          if (alreadyExists) return base
-
-          return {
-            ...base,
-            pages: base.pages.map((page, index) =>
-              index === 0 ? { ...page, data: [item, ...page.data] } : page
-            ),
-          }
-        }
+        (old) => updater(getSafeCache(old))
       )
     },
     [queryClient, finalQueryKey, getSafeCache]
   )
 
+  const addItemInCache = useCallback(
+    (item: Entity) => {
+      updateInfiniteCacheData((base) => {
+        if (base.pages.length === 0) return base
+
+        const alreadyExists = base.pages.some((page) =>
+          page.data.some((i) => i.id === item.id)
+        )
+        if (alreadyExists) return base
+
+        return {
+          ...base,
+          pages: base.pages.map((page, index) =>
+            index === 0 ? { ...page, data: [item, ...page.data] } : page
+          ),
+        }
+      })
+    },
+    [updateInfiniteCacheData]
+  )
+
   const updateItemInCache = useCallback(
     (id: string | number, updater: (item: Entity) => Entity) => {
-      queryClient.setQueryData<InfiniteFindAllResult<Entity>>(
-        finalQueryKey,
-        (old) => {
-          if (!old) return old
-          return {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              data: page.data.map((item) =>
-                item.id === id ? updater(item) : item
-              ),
-            })),
-          }
-        }
-      )
+      updateInfiniteCacheData((base) => ({
+        ...base,
+        pages: base.pages.map((page) => ({
+          ...page,
+          data: page.data.map((item) =>
+            item.id === id ? updater(item) : item
+          ),
+        })),
+      }))
     },
-    [queryClient, finalQueryKey]
+    [updateInfiniteCacheData]
   )
 
   const removeItemInCache = useCallback(
     (id: string | number) => {
-      queryClient.setQueryData<InfiniteFindAllResult<Entity>>(
-        finalQueryKey,
-        (old) => {
-          if (!old) return old
-          return {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              data: page.data.filter((item) => item.id !== id),
-            })),
-          }
-        }
-      )
+      updateInfiniteCacheData((base) => ({
+        ...base,
+        pages: base.pages.map((page) => ({
+          ...page,
+          data: page.data.filter((item) => item.id !== id),
+        })),
+      }))
     },
-    [queryClient, finalQueryKey]
+    [updateInfiniteCacheData]
   )
 
   const emptyCache = useCallback(() => {
-    queryClient.setQueryData<InfiniteFindAllResult<Entity>>(finalQueryKey, {
-      ...EMPTY_INFINITE_CACHE,
-    })
-  }, [queryClient, finalQueryKey])
+    updateInfiniteCacheData(() => ({ ...EMPTY_INFINITE_CACHE }))
+  }, [updateInfiniteCacheData])
 
   return {
     ...hook,

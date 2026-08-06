@@ -38,7 +38,7 @@ export default function RolesView() {
     queryKey: queryKeys.roles,
   })
 
-  const { data, isLoading: isLoadingData } = crud.useFindById({ id: editing })
+  const { data, isLoading: isLoadingData } = crud.useFindById({ id: editing! })
 
   useEffect(() => {
     if (open && editing && data) {

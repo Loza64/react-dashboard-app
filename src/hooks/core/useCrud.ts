@@ -1,11 +1,12 @@
-import AbstractService, {
-  FindByParams,
-  FindByIdParams,
-  RestoreParams,
-  DeleteParams,
-  UpdateParams,
+import { AbstractService } from '@/sdk/model/core/AbstractService'
+import {
   CreateParams,
-} from '@/sdk/model/core/AbstractService'
+  DeleteParams,
+  FindByIdParams,
+  FindByParams,
+  RestoreParams,
+  UpdateParams,
+} from '@/sdk/model/core/ParamsService'
 import BaseEntity from '@/sdk/model/entities/BaseEntity'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -26,58 +27,46 @@ export default function useCrud<Entity extends BaseEntity>({
 
   const normalizedQueryKey = Array.isArray(queryKey) ? queryKey : [queryKey]
 
+  const injectConfig = <
+    T extends {
+      config?: object
+      onForbidden?: () => void
+      onUnauthorized?: () => void
+    },
+  >(
+    params: T
+  ) => ({
+    ...params,
+    config: {
+      ...params.config,
+      onForbidden: onForbidden ?? params.onForbidden,
+      onUnauthorized: onUnauthorized ?? params.onUnauthorized,
+    },
+  })
+
   const createMutation = useMutation({
     mutationFn: (params: CreateParams<Entity>) =>
-      service.create({
-        ...params,
-        config: {
-          ...params.config,
-          onForbidden: onForbidden ?? params.onForbidden,
-          onUnauthorized: onUnauthorized ?? params.onUnauthorized,
-        },
-      }),
+      service.create(injectConfig(params)),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: normalizedQueryKey }),
   })
 
   const updateMutation = useMutation({
     mutationFn: (params: UpdateParams<Entity>) =>
-      service.update({
-        ...params,
-        config: {
-          ...params.config,
-          onForbidden: onForbidden ?? params.onForbidden,
-          onUnauthorized: onUnauthorized ?? params.onUnauthorized,
-        },
-      }),
+      service.update(injectConfig(params)),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: normalizedQueryKey }),
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (params: DeleteParams) =>
-      service.delete({
-        ...params,
-        config: {
-          ...params.config,
-          onForbidden: onForbidden ?? params.onForbidden,
-          onUnauthorized: onUnauthorized ?? params.onUnauthorized,
-        },
-      }),
+    mutationFn: (params: DeleteParams) => service.delete(injectConfig(params)),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: normalizedQueryKey }),
   })
 
   const restoreMutation = useMutation({
     mutationFn: (params: RestoreParams) =>
-      service.restore({
-        ...params,
-        config: {
-          ...params.config,
-          onForbidden: onForbidden ?? params.onForbidden,
-          onUnauthorized: onUnauthorized ?? params.onUnauthorized,
-        },
-      }),
+      service.restore(injectConfig(params)),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: normalizedQueryKey }),
   })
@@ -85,36 +74,15 @@ export default function useCrud<Entity extends BaseEntity>({
   const useFindById = (params: FindByIdParams) => {
     return useQuery({
       queryKey: [queryKey, params.id],
-      queryFn: () =>
-        service.findById({
-          ...params,
-          config: {
-            ...params.config,
-            onForbidden: onForbidden ?? params.onForbidden,
-            onUnauthorized: onUnauthorized ?? params.onUnauthorized,
-          },
-        }),
+      queryFn: () => service.findById(injectConfig(params)),
       enabled: !!params.id,
     })
   }
 
-  const useFindBy = (
-    params: FindByParams & {
-      onUnauthorized?: () => void
-      onForbidden?: () => void
-    }
-  ) => {
+  const useFindBy = (params: FindByParams) => {
     return useQuery({
       queryKey: [queryKey, params],
-      queryFn: () =>
-        service.findBy({
-          ...params,
-          config: {
-            ...params.config,
-            onForbidden: onForbidden ?? params.onForbidden,
-            onUnauthorized: onUnauthorized ?? params.onUnauthorized,
-          },
-        }),
+      queryFn: () => service.findBy(injectConfig(params)),
       enabled: !!params,
     })
   }

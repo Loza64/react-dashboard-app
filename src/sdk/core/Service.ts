@@ -2,7 +2,10 @@ import { type AxiosInstance } from 'axios'
 import { AxiosConfig } from './AxiosConfig'
 import { sdkSettings } from '@/sdk/core/SdkSettings'
 import BaseEntity from '../model/entities/BaseEntity'
-import AbstractService, {
+import { BaseResponse } from '../model/response/BaseResponse'
+import PaginationResponse from '../model/response/PaginationResponse'
+import { AbstractService } from '../model/core/AbstractService'
+import {
   ApiServiceParams,
   CreateParams,
   DeleteParams,
@@ -12,9 +15,7 @@ import AbstractService, {
   RestoreParams,
   ServiceConfig,
   UpdateParams,
-} from '../model/core/AbstractService'
-import { BaseResponse } from '../model/response/BaseResponse'
-import PaginationResponse from '../model/response/PaginationResponse'
+} from '../model/core/ParamsService'
 
 export default class Service<
   Entity extends BaseEntity,
