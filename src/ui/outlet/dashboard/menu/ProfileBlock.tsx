@@ -10,8 +10,8 @@ export default function ProfileBlock({
   loadingProfile: boolean
 }) {
   return (
-    <div className="flex items-center gap-3 border-b border-gray-100 p-4 dark:border-neutral-800">
-      <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-lg font-semibold text-blue-600">
+    <div className="border-default flex items-center gap-3 border-b bg-[var(--bg-subtle)] p-4">
+      <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[var(--primary-soft)] text-lg font-semibold text-[var(--primary-color)]">
         {loadingProfile ? (
           <Loader2 className="animate-spin" size={18} />
         ) : (
@@ -22,7 +22,7 @@ export default function ProfileBlock({
       <div className="flex min-w-0 flex-col overflow-hidden">
         <span
           title={username || 'Unknown'}
-          className="truncate text-sm leading-tight font-medium text-gray-800 dark:text-gray-200"
+          className="truncate text-sm leading-tight font-medium text-[var(--text-base)]"
         >
           {loadingProfile ? 'Cargando...' : (username ?? 'Unknown')}
         </span>
@@ -30,8 +30,8 @@ export default function ProfileBlock({
         <span
           className={`mt-1 w-fit rounded-full px-2 py-0.5 text-xs font-medium ${
             role
-              ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
-              : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+              ? 'bg-[var(--primary-soft)] text-[var(--primary-strong)]'
+              : 'bg-[var(--bg-muted)] text-[var(--text-muted)]'
           }`}
         >
           {role?.toLocaleLowerCase() || 'unknown'}

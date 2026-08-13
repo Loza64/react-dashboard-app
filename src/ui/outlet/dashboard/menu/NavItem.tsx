@@ -35,14 +35,14 @@ export default function NavItem({
           depth > 0 ? 'pl-8' : ''
         } ${
           active
-            ? 'bg-primary text-white!'
-            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-neutral-800'
+            ? 'bg-[var(--primary-color)] text-white shadow-sm'
+            : 'text-[var(--text-base)] hover:bg-[var(--bg-muted)]'
         }`}
       >
         {item.icon && (
           <span
             className={`flex items-center justify-center ${
-              active ? 'text-white' : 'text-black dark:text-gray-200'
+              active ? 'text-white' : 'text-[var(--text-muted)]'
             }`}
           >
             {item.icon}

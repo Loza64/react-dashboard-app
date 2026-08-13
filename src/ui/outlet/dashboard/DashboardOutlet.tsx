@@ -44,7 +44,7 @@ export default function DashboardOutlet({
 
   if (loading.profile) {
     return (
-      <div className="flex h-screen items-center justify-center bg-white dark:bg-neutral-900">
+      <div className="bg-layout flex h-screen items-center justify-center">
         <Loader2 className="text-primary animate-spin" size={32} />
       </div>
     )
@@ -53,18 +53,18 @@ export default function DashboardOutlet({
   if (!allowed) return <ForbiddenView />
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="bg-layout flex min-h-screen w-full">
       <DashboardMenu open={menuOpen} onClose={closeMenu} />
 
-      <div className="flex min-h-screen w-full min-w-0 flex-1 flex-col overflow-hidden bg-white transition-all duration-200 ease-in-out dark:bg-neutral-900">
-        <div className="flex shrink-0 items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-9 sm:py-4">
+      <div className="bg-app flex min-h-screen w-full min-w-0 flex-1 flex-col overflow-hidden transition-all duration-200 ease-in-out">
+        <div className="border-default bg-surface/90 flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur-sm sm:gap-4 sm:px-9 sm:py-4">
           <div className="flex min-w-0 items-center gap-3">
             <button
               onClick={toggleMenu}
               aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-              className="flex shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white p-2 shadow-sm transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="border-default bg-surface hover:bg-muted flex shrink-0 items-center justify-center rounded-full border p-2 shadow-sm transition-colors"
             >
-              <MenuIcon size={18} />
+              <MenuIcon size={18} className="text-[var(--text-base)]" />
             </button>
 
             <div className="text-primary flex min-w-0 flex-col">
@@ -76,16 +76,16 @@ export default function DashboardOutlet({
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {routeData.search && (
-              <div className="relative hidden items-center sm:flex dark:border-neutral-700 dark:bg-neutral-800">
+              <div className="relative hidden items-center sm:flex">
                 <Search
                   size={16}
-                  className="pointer-events-none absolute left-3 text-blue-500"
+                  className="pointer-events-none absolute left-3 text-[var(--primary-color)]"
                 />
                 <input
                   placeholder="Buscar"
                   value={search ?? ''}
                   onChange={(event) => setSearch(event.target.value)}
-                  className="w-full max-w-80 rounded-lg border border-gray-200 bg-white py-2 pr-3 pl-9 text-sm outline-none focus:border-blue-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-100"
+                  className="border-default bg-surface w-full max-w-80 rounded-lg border py-2 pr-3 pl-9 text-sm text-[var(--text-base)] transition-colors outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--primary-color)]"
                 />
               </div>
             )}
@@ -93,33 +93,33 @@ export default function DashboardOutlet({
             <button
               onClick={toggleTheme}
               aria-label="Cambiar tema"
-              className="text-primary flex items-center justify-center rounded-full border border-gray-200 bg-white p-2 shadow-sm transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              className="border-default bg-surface hover:bg-muted flex items-center justify-center rounded-full border p-2 text-[var(--text-base)] shadow-sm transition-colors"
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            <div className="border-primary flex size-9 shrink-0 items-center justify-center rounded-full border-2 bg-blue-100 text-sm font-semibold text-blue-600">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-[var(--primary-color)] bg-[var(--primary-soft)] text-sm font-semibold text-[var(--primary-strong)]">
               {(user?.username?.[0] ?? '?').toUpperCase()}
             </div>
           </div>
         </div>
 
         {routeData.search && (
-          <div className="relative flex items-center px-4 pb-3 sm:hidden dark:border-neutral-700 dark:bg-neutral-800">
+          <div className="relative flex items-center px-4 pb-3 sm:hidden">
             <Search
               size={16}
-              className="pointer-events-none absolute left-7 text-blue-500"
+              className="pointer-events-none absolute left-7 text-[var(--primary-color)]"
             />
             <input
               placeholder="Buscar"
               value={search ?? ''}
               onChange={(event) => setSearch(event.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-white py-2 pr-3 pl-9 text-sm outline-none focus:border-blue-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-100"
+              className="border-default bg-surface w-full rounded-lg border py-2 pr-3 pl-9 text-sm text-[var(--text-base)] transition-colors outline-none placeholder:text-[var(--text-soft)] focus:border-[var(--primary-color)]"
             />
           </div>
         )}
 
-        <div className="scrollbar-hide h-[calc(100dvh-70px)] overflow-y-auto rounded-tl-lg bg-gray-100 p-3 transition-all duration-200 dark:bg-neutral-800">
+        <div className="scrollbar-hide bg-layout h-[calc(100dvh-70px)] overflow-y-auto rounded-tl-lg p-3 transition-all duration-200">
           {children}
         </div>
       </div>

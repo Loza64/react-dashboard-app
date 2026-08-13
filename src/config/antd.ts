@@ -1,28 +1,28 @@
 import { theme as antdTheme, type ThemeConfig } from 'antd'
 import type { ThemeMode } from '@/hooks/useTheme'
 
-const primaryColor = '#000049'
-const primaryHover = '#002a4f'
-const secondaryColor = '#002a4f'
+const primaryColor = '#1d4ed8'
+const primaryHover = '#2563eb'
+const secondaryColor = '#0f172a'
 
 export const baseBorderRadius = 6
 
 const palette = {
   light: {
-    baseBG: '#ffffff',
-    layoutBG: '#ffffff',
-    textBase: '#1f2937',
-    borderColor: '#e5e7eb',
+    baseBG: '#f4f7fb',
+    layoutBG: '#edf2f7',
+    textBase: '#0f172a',
+    borderColor: '#dfe7f1',
     modalBG: '#ffffff',
-    maskBG: 'rgba(0,0,0,0.45)',
+    maskBG: 'rgba(15, 23, 42, 0.5)',
   },
   dark: {
-    baseBG: '#141414',
-    layoutBG: '#101010',
-    textBase: '#e5e7eb',
-    borderColor: '#303030',
-    modalBG: '#1f1f1f',
-    maskBG: 'rgba(0,0,0,0.65)',
+    baseBG: '#0b1220',
+    layoutBG: '#0d1728',
+    textBase: '#e2e8f0',
+    borderColor: '#23314a',
+    modalBG: '#101c2f',
+    maskBG: 'rgba(2, 6, 23, 0.72)',
   },
 }
 
