@@ -37,8 +37,6 @@ export default function OutletContainer({
 
   if (!routeData) return <NotFoundView />
 
-  // guestOnly aplica a cualquier grupo (hoy solo lo usan '/' y '/login'):
-  // mientras el effect de arriba redirige, no mostramos nada.
   if (routeData.guestOnly && user) return null
 
   if (routeData.group === 'dashboard') {
@@ -49,6 +47,5 @@ export default function OutletContainer({
     )
   }
 
-  // Grupos sin outlet propio (ej. "public") se muestran tal cual.
   return children
 }
