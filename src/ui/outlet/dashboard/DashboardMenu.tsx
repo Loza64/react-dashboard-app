@@ -1,279 +1,315 @@
+import { ChevronLeft, ChevronRight, Loader2, LogOut, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { menu, selectMenuKeys } from '@/config/menu'
 import { searchRecoil } from '@/constants/recoil'
 import type { RoleName } from '@/enum/role'
 import useRecoilStorage from '@/hooks/core/useRecoilStorage'
 import { useSession } from '@/hooks/useSession'
 import type { MenuItem } from '@/models/app/menu'
-import {
-  CloseOutlined,
-  LeftOutlined,
-  LoadingOutlined,
-  LogoutOutlined,
-  RightOutlined,
-  SearchOutlined,
-} from '@ant-design/icons'
-import { useMutation } from '@tanstack/react-query'
-import {
-  Avatar,
-  Button,
-  Input,
-  Layout,
-  Menu,
-  Spin,
-  Tag,
-  Tooltip,
-  Typography,
-} from 'antd'
-import type { MenuProps } from 'antd/lib'
-import { useMemo } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-
-const { Sider } = Layout
-const { Text } = Typography
 
 const isAuthorized = (item: MenuItem, role: RoleName) =>
   item.authorized.includes(role) || item.authorized.includes('*')
 
-function buildMenuItemsForAntd(
-  items: MenuItem[],
-  role: RoleName,
-  collapsed: boolean,
-  depth = 0
-): MenuProps['items'] {
-  return items.reduce<NonNullable<MenuProps['items']>>((acc, item) => {
-    const children = item.children?.length
-      ? buildMenuItemsForAntd(item.children, role, collapsed, depth + 1)
-      : undefined
+function NavItem({
+  item,
+  role,
+  collapsed,
+  selectedKeys,
+  onNavigate,
+  depth = 0,
+}: {
+  item: MenuItem
+  role: RoleName
+  collapsed: boolean
+  selectedKeys: string[]
+  onNavigate: (key: string) => void
+  depth?: number
+}) {
+  const children = item.children?.filter(
+    (child) => isAuthorized(child, role) && child.view !== false
+  )
+  const hasVisibleChildren = !!children?.length
+  const authorized = isAuthorized(item, role) && item.view !== false
 
-    const hasVisibleChildren = !!children?.length
-    const authorized = isAuthorized(item, role) && item.view !== false
+  if (!authorized && !hasVisibleChildren) return null
 
-    if (!authorized && !hasVisibleChildren) return acc
+  const active = selectedKeys.includes(item.key)
 
-    acc.push({
-      key: item.key,
-      icon: depth === 0 ? item.icon : undefined,
-      label:
-        depth === 0 ? (
-          item.label
-        ) : (
-          <Tooltip
-            placement="bottomRight"
-            title={collapsed ? undefined : item.label}
+  return (
+    <div>
+      <button
+        onClick={() => onNavigate(item.key)}
+        title={collapsed ? item.label : undefined}
+        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-extrabold transition-colors ${
+          depth > 0 ? 'pl-8' : ''
+        } ${collapsed ? 'justify-center px-0' : ''} ${
+          active
+            ? 'bg-primary text-white!'
+            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-neutral-800'
+        }`}
+      >
+        {item.icon && (
+          <span
+            className={`flex items-center justify-center ${
+              active ? 'text-white' : 'text-black dark:text-gray-200'
+            }`}
           >
-            <div className="flex items-center gap-2">
-              {item.icon && <span>{item.icon}</span>}
-              {item.label}
-            </div>
-          </Tooltip>
-        ),
-      children: hasVisibleChildren ? children : undefined,
-    })
+            {item.icon}
+          </span>
+        )}
+        {!collapsed && <span className="truncate">{item.label}</span>}
+      </button>
 
-    return acc
-  }, [])
+      {hasVisibleChildren && !collapsed && (
+        <div className="mt-1 flex flex-col gap-1">
+          {children!.map((child) => (
+            <NavItem
+              key={child.key}
+              item={child}
+              role={role}
+              collapsed={collapsed}
+              selectedKeys={selectedKeys}
+              onNavigate={onNavigate}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function MenuList({
+  role,
+  collapsed,
+  selectedKeys,
+  onNavigate,
+}: {
+  role: RoleName
+  collapsed: boolean
+  selectedKeys: string[]
+  onNavigate: (key: string) => void
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      {menu.map((item) => (
+        <NavItem
+          key={item.key}
+          item={item}
+          role={role}
+          collapsed={collapsed}
+          selectedKeys={selectedKeys}
+          onNavigate={onNavigate}
+        />
+      ))}
+    </div>
+  )
+}
+
+function ProfileBlock({
+  collapsed,
+  username,
+  role,
+  loadingProfile,
+}: {
+  collapsed: boolean
+  username?: string
+  role?: string
+  loadingProfile: boolean
+}) {
+  return (
+    <div
+      className={`flex items-center gap-3 p-4 transition-all duration-300 ${
+        collapsed ? 'justify-center' : ''
+      }`}
+    >
+      <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-lg font-semibold text-blue-600">
+        {loadingProfile ? (
+          <Loader2 className="animate-spin" size={18} />
+        ) : (
+          (username?.[0] ?? '?').toUpperCase()
+        )}
+      </div>
+
+      {!collapsed && (
+        <div className="flex min-w-0 flex-col overflow-hidden">
+          <span
+            title={username || 'Unknown'}
+            className="truncate text-sm leading-tight font-medium text-gray-800 dark:text-gray-200"
+          >
+            {loadingProfile ? 'Cargando...' : (username ?? 'Unknown')}
+          </span>
+
+          <span
+            className={`mt-1 w-fit rounded-full px-2 py-0.5 text-xs font-medium ${
+              role
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+            }`}
+          >
+            {role?.toLocaleLowerCase() || 'unknown'}
+          </span>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function DashboardMenu({
-  isMobile,
-  openMenu,
   collapsed,
+  onToggleCollapse,
+  mobileOpen,
+  onCloseMobile,
 }: {
   collapsed: boolean
-  openMenu: () => void
-  isMobile: boolean
+  onToggleCollapse: () => void
+  mobileOpen: boolean
+  onCloseMobile: () => void
 }) {
-  const [search, setSearch] = useRecoilStorage<string | undefined>(searchRecoil)
-  const { profile: profile, loading, logout } = useSession()
+  const [, setSearch] = useRecoilStorage<string | undefined>(searchRecoil)
+  const { profile, loading, logout } = useSession()
   const navigate = useNavigate()
-
-  const role = profile?.role?.name
-
   const location = useLocation()
 
-  const filteredMenuItems = useMemo(
-    () => buildMenuItemsForAntd(menu, role!, collapsed) ?? [],
-    [role, collapsed]
-  )
-
-  const { mutateAsync: logoutMutate, isPending: closingSession } = useMutation({
-    mutationFn: () => logout(),
-  })
+  const role = profile?.role?.name
+  const [closingSession, setClosingSession] = useState(false)
 
   const selectedKeys = useMemo(
     () => selectMenuKeys(location.pathname),
     [location.pathname]
   )
 
-  const handleLogout = () => {
-    logoutMutate()
+  const handleLogout = async () => {
+    try {
+      setClosingSession(true)
+      await logout()
+    } finally {
+      setClosingSession(false)
+    }
   }
 
-  const handleMenuClick = (key: string) => {
-    if (key === 'logout') return handleLogout()
-    if (key === 'toggle') return openMenu()
+  const handleNavigate = (key: string) => {
+    setSearch('')
+    if (key === location.pathname) return
     navigate(key)
   }
 
   return (
     <>
-      {!isMobile && (
-        <>
-          <div
-            className={`fixed top-5 z-500 -translate-x-full transition-all duration-300 ease-out ${collapsed ? 'left-[95px]' : 'left-[265px]'} hidden xl:block`}
-          >
-            <button
-              onClick={() => handleMenuClick('toggle')}
-              className="text-primary flex items-center justify-center rounded-full bg-white p-1.5 shadow-md transition-transform duration-150 hover:bg-gray-50 active:scale-95"
-            >
-              {collapsed ? (
-                <RightOutlined className="text-[15px] font-bold" />
-              ) : (
-                <LeftOutlined className="text-[15px] font-bold" />
-              )}
-            </button>
-          </div>
-
-          <aside className="relative flex h-dvh">
-            <Sider
-              collapsible
-              collapsed={collapsed}
-              theme="light"
-              width={250}
-              collapsedWidth={80}
-              trigger={null}
-            >
-              <div
-                className={`flex items-center gap-3 p-4 transition-all duration-300 ${
-                  collapsed ? 'justify-center' : ''
-                }`}
-              >
-                <Avatar
-                  size={48}
-                  className="bg-blue-100 font-semibold text-blue-600"
-                >
-                  {loading.profile ? (
-                    <Spin indicator={<LoadingOutlined spin />} size="small" />
-                  ) : (
-                    (profile?.username?.[0] ?? '?').toUpperCase()
-                  )}
-                </Avatar>
-
-                {!collapsed && (
-                  <div className="flex flex-col overflow-hidden">
-                    <Tooltip
-                      title={`${profile?.username || 'Unknown'}`}
-                      placement="bottom"
-                    >
-                      <Text
-                        ellipsis
-                        strong
-                        className="text-sm leading-tight font-medium text-gray-800"
-                      >
-                        {loading.profile
-                          ? 'Cargando...'
-                          : `${profile?.username ?? 'Unknown'}`}
-                      </Text>
-                    </Tooltip>
-
-                    <Tag
-                      className="mt-1 w-fit text-xs"
-                      color={role ? 'green' : 'red'}
-                    >
-                      {role?.toLocaleLowerCase() || 'unknown'}
-                    </Tag>
-                  </div>
-                )}
-              </div>
-
-              <div className="scrollbar-hide h-[calc(100dvh-136px)] overflow-y-auto px-1">
-                <Menu
-                  mode="inline"
-                  theme="light"
-                  selectedKeys={selectedKeys}
-                  items={filteredMenuItems}
-                  onClick={({ key }) => {
-                    if (key === location.pathname) return
-                    navigate(key, { replace: false })
-                  }}
-                  inlineCollapsed={collapsed}
-                  style={{ border: 'none' }}
-                />
-              </div>
-
-              <div className="p-3">
-                <Button
-                  type="text"
-                  danger
-                  icon={<LogoutOutlined />}
-                  onClick={handleLogout}
-                  block
-                  className="flex items-center justify-center gap-2 text-sm font-medium text-red-600 transition-all hover:bg-red-50"
-                >
-                  {!collapsed && 'Cerrar sesión'}
-                </Button>
-              </div>
-            </Sider>
-          </aside>
-        </>
-      )}
-      {isMobile && (
+      {/* Sidebar de escritorio */}
+      <aside className="relative hidden h-dvh shrink-0 lg:flex">
         <div
-          className={`fixed top-0 z-5000 h-dvh w-full overflow-y-auto bg-white shadow-md transition-all duration-300 ease-out ${
-            collapsed ? '-translate-x-full' : 'translate-x-0'
+          className={`flex h-dvh flex-col border-r border-gray-100 bg-white transition-all duration-300 ease-out dark:border-neutral-800 dark:bg-neutral-900 ${
+            collapsed ? 'w-20' : 'w-64'
           }`}
         >
-          <div className="flex w-full flex-col gap-4 p-4">
-            <div className="border-primary flex cursor-pointer items-center gap-3 overflow-hidden rounded-lg border text-center transition-colors duration-150">
-              <Input
-                placeholder="Buscar"
-                prefix={<SearchOutlined className="text-blue-500" />}
-                className="w-full! rounded-lg! border-none font-bold text-blue-500! placeholder:text-blue-400"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                style={{ width: 200 }}
-              />
-            </div>
+          <ProfileBlock
+            collapsed={collapsed}
+            username={profile?.username}
+            role={role}
+            loadingProfile={loading.profile}
+          />
 
-            {/* Renderizado del menú filtrado con JSX para mobile */}
-            <Menu
-              mode="inline"
-              theme="light"
+          <div className="scrollbar-hide flex-1 overflow-y-auto px-2">
+            <MenuList
+              role={role!}
+              collapsed={collapsed}
               selectedKeys={selectedKeys}
-              items={filteredMenuItems}
-              onClick={({ key }) => {
-                if (key === location.pathname) return
-                navigate(key, { replace: false })
-              }}
-              inlineCollapsed={collapsed}
-              style={{ border: 'none' }}
+              onNavigate={handleNavigate}
             />
+          </div>
 
-            {/* Botón de cerrar sesión */}
-            <div className="border-b-primary flex cursor-pointer items-center justify-center gap-3 border-b px-3 py-2 text-center transition-colors duration-150 hover:bg-gray-100">
-              <Button
-                type="text"
-                danger
-                icon={<LogoutOutlined />}
-                onClick={handleLogout}
-                loading={closingSession}
-                block
-                className="flex items-center justify-center gap-2 text-sm font-medium text-red-600 transition-all hover:bg-red-50"
-              >
-                {!collapsed && 'Cerrar sesión'}
-              </Button>
-            </div>
-
-            {/* Botón de cerrar menú */}
-            <div
-              className="bg-primary mx-auto flex size-12 cursor-pointer items-center justify-center rounded-full text-white shadow-md transition-all duration-200 ease-out hover:bg-blue-700 active:scale-95"
-              onClick={openMenu}
+          <div className="p-3">
+            <button
+              onClick={handleLogout}
+              disabled={closingSession}
+              title={collapsed ? 'Cerrar sesión' : undefined}
+              className={`flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60 dark:hover:bg-red-900/20 ${
+                collapsed ? 'px-0' : ''
+              }`}
             >
-              <CloseOutlined className="text-white" size={200} />
-            </div>
+              {closingSession ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : (
+                <LogOut size={16} />
+              )}
+              {!collapsed && 'Cerrar sesión'}
+            </button>
           </div>
         </div>
-      )}
+
+        <div className="absolute top-5 right-0 z-50 hidden translate-x-1/2 xl:block">
+          <button
+            onClick={onToggleCollapse}
+            aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
+            className="text-primary flex items-center justify-center rounded-full bg-white p-1.5 shadow-md transition-transform duration-150 hover:bg-gray-50 active:scale-95 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+          >
+            {collapsed ? (
+              <ChevronRight size={15} strokeWidth={3} />
+            ) : (
+              <ChevronLeft size={15} strokeWidth={3} />
+            )}
+          </button>
+        </div>
+      </aside>
+
+      {/* Drawer móvil */}
+      <div
+        className={`fixed inset-0 z-4000 bg-black/40 transition-opacity duration-300 lg:hidden ${
+          mobileOpen
+            ? 'pointer-events-auto opacity-100'
+            : 'pointer-events-none opacity-0'
+        }`}
+        onClick={onCloseMobile}
+      />
+
+      <div
+        className={`fixed top-0 left-0 z-5000 flex h-dvh w-72 max-w-[85vw] flex-col border-r border-gray-100 bg-white shadow-xl transition-transform duration-300 ease-out lg:hidden dark:border-neutral-800 dark:bg-neutral-900 ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-gray-100 p-2 dark:border-neutral-800">
+          <ProfileBlock
+            collapsed={false}
+            username={profile?.username}
+            role={role}
+            loadingProfile={loading.profile}
+          />
+
+          <button
+            onClick={onCloseMobile}
+            aria-label="Cerrar menú"
+            className="mr-2 flex size-9 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="scrollbar-hide flex-1 overflow-y-auto p-2">
+          <MenuList
+            role={role!}
+            collapsed={false}
+            selectedKeys={selectedKeys}
+            onNavigate={handleNavigate}
+          />
+        </div>
+
+        <div className="p-3">
+          <button
+            onClick={handleLogout}
+            disabled={closingSession}
+            className="flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60 dark:hover:bg-red-900/20"
+          >
+            {closingSession ? (
+              <Loader2 className="animate-spin" size={16} />
+            ) : (
+              <LogOut size={16} />
+            )}
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
     </>
   )
 }

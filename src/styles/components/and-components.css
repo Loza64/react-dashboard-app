@@ -41,6 +41,10 @@
   color: black !important;
 }
 
+.dark .ant-menu-item .ant-menu-item-icon {
+  color: #e5e7eb !important;
+}
+
 .ant-menu-item-selected .ant-menu-item-icon {
   color: white !important;
 }

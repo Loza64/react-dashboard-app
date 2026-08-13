@@ -10,10 +10,8 @@ import { matchRoute } from '@/utils/route-matcher'
 
 export default function OutletContainer({
   children,
-  isMobile,
 }: {
   children: React.ReactNode
-  isMobile: boolean
 }) {
   const { profile: user } = useSession()
   const location = useLocation()
@@ -40,11 +38,7 @@ export default function OutletContainer({
   if (routeData.guestOnly && user) return null
 
   if (routeData.group === 'dashboard') {
-    return (
-      <DashboardOutlet routeData={routeData} isMobile={isMobile}>
-        {children}
-      </DashboardOutlet>
-    )
+    return <DashboardOutlet routeData={routeData}>{children}</DashboardOutlet>
   }
 
   return children
