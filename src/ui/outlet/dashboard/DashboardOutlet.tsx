@@ -12,15 +12,6 @@ import type { RouteConfig } from '@/config/routes.app'
 import { isAuthorized } from '@/utils/permission.app'
 import useRecoilStorage from '@/hooks/core/useRecoilStorage'
 
-/**
- * Outlet exclusivo del grupo "dashboard": sidebar, header con título +
- * buscador, guard de rol y bottom bar en mobile. Vive solo acá, no lo
- * comparten ni lo tocan otros grupos (ej. "public").
- *
- * Si más adelante querés otro layout distinto para otro grupo (ej. un
- * "ReportsOutlet"), creá su propio archivo en ui/outlet/ y enchufalo en
- * OutletContainer sin tocar este componente.
- */
 export default function DashboardOutlet({
   children,
   isMobile,
