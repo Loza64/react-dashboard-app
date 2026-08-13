@@ -1,53 +1,67 @@
-import { Users, Key, LayoutDashboard } from 'lucide-react'
 import React from 'react'
-import type { LucideProps } from 'lucide-react'
 import type { MenuItem } from '@/models/app/menu'
 import { RoutesEnum } from '@/enum/routes..app'
-import { routesConfig } from './routes.app'
+import { routesConfig, type RouteMenuMeta } from './routes.app'
 
-export const createIcon = (IconComponent: React.ComponentType<LucideProps>) =>
-  React.createElement(IconComponent)
+/**
+ * El menú lateral ya no se mantiene a mano: se arma solo a partir de las
+ * rutas registradas en `routesConfig` que definen `menu`. Agregar una ruta
+ * nueva al sidebar es agregar el bloque `menu: {...}` en su definición de
+ * routes.app.ts, nada más.
+ */
+function buildMenuFromRoutes(): MenuItem[] {
+  const items: {
+    path: RoutesEnum
+    meta: RouteMenuMeta
+    roles: MenuItem['authorized']
+  }[] = []
 
-export const menu: MenuItem[] = [
-  {
-    key: RoutesEnum.DASHBOARD,
-    icon: createIcon(LayoutDashboard),
-    label: 'Dashboard',
-    authorized: routesConfig[RoutesEnum.DASHBOARD].roles,
-    view: true,
-  },
-  {
-    key: RoutesEnum.ROLES,
-    icon: createIcon(Users),
-    label: 'Roles',
-    authorized: routesConfig[RoutesEnum.ROLES].roles,
-    view: true,
-  },
-  {
-    key: RoutesEnum.PERMISSIONS,
-    icon: createIcon(Key),
-    label: 'Permisos',
-    authorized: routesConfig[RoutesEnum.PERMISSIONS].roles,
-    view: true,
-  },
-]
+  for (const path of Object.keys(routesConfig) as RoutesEnum[]) {
+    const route = routesConfig[path]
+    if (!route.menu) continue
+    items.push({ path, meta: route.menu, roles: route.roles })
+  }
+
+  return items
+    .sort((a, b) => a.meta.order - b.meta.order)
+    .map(({ path, meta, roles }) => ({
+      key: path,
+      icon: React.createElement(meta.icon),
+      label: meta.label,
+      authorized: roles,
+      view: true,
+    }))
+}
+
+export const menu: MenuItem[] = buildMenuFromRoutes()
 
 function findMenuChain(
   items: MenuItem[],
-  route: string
+  route: string,
+  ancestors: MenuItem[] = []
 ): MenuItem[] | undefined {
+  let best: MenuItem[] | undefined
+
   for (const item of items) {
-    const matches = item.key === route || route.startsWith(item.key)
+    const matches = item.key === route || route.startsWith(`${item.key}/`)
     if (!matches) continue
 
-    if (item.children?.length) {
-      const childChain = findMenuChain(item.children, route)
-      if (childChain) return [item, ...childChain]
-    }
+    const chain = item.children?.length
+      ? (findMenuChain(item.children, route, [...ancestors, item]) ?? [
+          ...ancestors,
+          item,
+        ])
+      : [...ancestors, item]
 
-    return [item]
+    // Con rutas anidadas (ej. /dashboard y /dashboard/roles) puede haber
+    // más de una coincidencia por prefijo; nos quedamos con la más
+    // específica (la de key más largo).
+    if (!best || chain.at(-1)!.key.length > best.at(-1)!.key.length) {
+      best = chain
+    }
   }
-  return undefined
+
+  return best
 }
 
 export function selectMenuKeys(route: string): string[] {

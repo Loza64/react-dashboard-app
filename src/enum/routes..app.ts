@@ -2,6 +2,8 @@ export enum RoutesEnum {
   ROOT = '/',
   LOGIN = '/login',
   DASHBOARD = '/dashboard',
-  ROLES = '/roles',
-  PERMISSIONS = '/permissions',
+  DASHBOARD_ROLES = '/dashboard/roles',
+  DASHBOARD_PERMISSIONS = '/dashboard/permissions',
+  // Ejemplo de ruta pública nueva, agregada sin tocar el outlet ni el guard.
+  PUBLIC_PRODUCTS = '/public/products',
 }

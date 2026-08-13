@@ -11,6 +11,7 @@ import SessionResponse from '@/sdk/model/response/SessionResponse'
 import User from '@/models/entities/User'
 import SessionType from '@/models/app/context/SessionType'
 import errorResponse from '@/utils/errorResponse'
+import { RoutesEnum } from '@/enum/routes..app'
 
 const service = userService
 const settings = sdkSettings
@@ -44,7 +45,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
       settings.token = token
       settings.refreshToken = refreshToken
       queryClient.setQueryData(queryKeys.session, data)
-      navigate('/dashboard', { replace: true })
+      navigate(RoutesEnum.DASHBOARD, { replace: true })
     },
     [navigate, queryClient]
   )
@@ -60,8 +61,8 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
       queryClient.setQueryData(queryKeys.session, null)
       messageApi.info('Sesión cerrada correctamente.')
 
-      if (location.pathname !== '/login') {
-        navigate('/login', { replace: true })
+      if (location.pathname !== RoutesEnum.LOGIN) {
+        navigate(RoutesEnum.LOGIN, { replace: true })
       }
     } catch (error) {
       errorResponse({ error })
@@ -69,8 +70,8 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
   }, [messageApi, navigate, location.pathname, queryClient])
 
   useEffect(() => {
-    if (!profileLoading && !token && location.pathname !== '/login') {
-      navigate('/login', { replace: true })
+    if (!profileLoading && !token && location.pathname !== RoutesEnum.LOGIN) {
+      navigate(RoutesEnum.LOGIN, { replace: true })
     }
   }, [profileLoading, token, location.pathname, navigate])
 

@@ -74,7 +74,7 @@ function buildMenuItemsForAntd(
   }, [])
 }
 
-export default function OutletMenu({
+export default function DashboardMenu({
   isMobile,
   openMenu,
   collapsed,
