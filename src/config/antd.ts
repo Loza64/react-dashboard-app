@@ -1,9 +1,9 @@
 import { theme as antdTheme, type ThemeConfig } from 'antd'
 import type { ThemeMode } from '@/hooks/useTheme'
 
-const primaryColor = 'red'
-const primaryHover = 'red'
-const secondaryColor = 'orange'
+const primaryColor = '#000049'
+const primaryHover = '#002a4f'
+const secondaryColor = '#002a4f'
 
 export const baseBorderRadius = 6
 

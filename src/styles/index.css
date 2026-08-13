@@ -9,8 +9,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --primary-color: red;
-  --secondary-color: orange;
+  --primary-color:  #000049;
+  --secondary-color: #002a4f;
 
   --bg-base: #ffffff;
   --bg-layout: #f3f4f6;

@@ -1,8 +1,9 @@
 import { Loader2, Menu as MenuIcon, Moon, Search, Sun } from 'lucide-react'
 import type React from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import DashboardMenu from './menu'
+import { useMenuVisibility } from './menu/useMenuVisibility'
 import { useSession } from '@/hooks/useSession'
 import ForbiddenView from '@/views/ForbiddenView'
 import { searchRecoil } from '@/constants/recoil'
@@ -19,9 +20,12 @@ export default function DashboardOutlet({
   routeData: RouteConfig
 }) {
   const [search, setSearch] = useRecoilStorage<string | undefined>(searchRecoil)
-  const [collapsed, setCollapsed] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
+  const {
+    open: menuOpen,
+    toggle: toggleMenu,
+    close: closeMenu,
+  } = useMenuVisibility()
 
   const { profile: user, loading } = useSession()
   const location = useLocation()
@@ -38,10 +42,6 @@ export default function DashboardOutlet({
     setSearch('')
   }, [currentPath, setSearch])
 
-  useEffect(() => {
-    queueMicrotask(() => setMobileOpen(false))
-  }, [currentPath])
-
   if (loading.profile) {
     return (
       <div className="flex h-screen items-center justify-center bg-white dark:bg-neutral-900">
@@ -54,20 +54,15 @@ export default function DashboardOutlet({
 
   return (
     <div className="flex min-h-screen w-full">
-      <DashboardMenu
-        collapsed={collapsed}
-        onToggleCollapse={() => setCollapsed((previous) => !previous)}
-        mobileOpen={mobileOpen}
-        onCloseMobile={() => setMobileOpen(false)}
-      />
+      <DashboardMenu open={menuOpen} onClose={closeMenu} />
 
       <div className="flex min-h-screen w-full min-w-0 flex-1 flex-col overflow-hidden bg-white transition-all duration-200 ease-in-out dark:bg-neutral-900">
         <div className="flex shrink-0 items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-9 sm:py-4">
           <div className="flex min-w-0 items-center gap-3">
             <button
-              onClick={() => setMobileOpen(true)}
-              aria-label="Abrir menú"
-              className="flex shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white p-2 shadow-sm transition-colors hover:bg-gray-50 lg:hidden dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+              onClick={toggleMenu}
+              aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              className="flex shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white p-2 shadow-sm transition-colors hover:bg-gray-50 dark:border-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700"
             >
               <MenuIcon size={18} />
             </button>

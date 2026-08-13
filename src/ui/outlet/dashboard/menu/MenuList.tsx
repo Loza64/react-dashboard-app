@@ -4,12 +4,10 @@ import NavItem from './NavItem'
 
 export default function MenuList({
   role,
-  collapsed,
   selectedKeys,
   onNavigate,
 }: {
   role: RoleName
-  collapsed: boolean
   selectedKeys: string[]
   onNavigate: (key: string) => void
 }) {
@@ -20,7 +18,6 @@ export default function MenuList({
           key={item.key}
           item={item}
           role={role}
-          collapsed={collapsed}
           selectedKeys={selectedKeys}
           onNavigate={onNavigate}
         />

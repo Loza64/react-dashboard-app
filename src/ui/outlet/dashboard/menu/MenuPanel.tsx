@@ -1,11 +1,9 @@
-import { X } from 'lucide-react'
 import type { RoleName } from '@/enum/role'
 import LogoutButton from './LogoutButton'
 import MenuList from './MenuList'
 import ProfileBlock from './ProfileBlock'
 
 export default function MenuPanel({
-  collapsed = false,
   role,
   username,
   loadingProfile,
@@ -13,9 +11,7 @@ export default function MenuPanel({
   closingSession,
   onNavigate,
   onLogout,
-  onClose,
 }: {
-  collapsed?: boolean
   role?: RoleName
   username?: string
   loadingProfile: boolean
@@ -23,46 +19,25 @@ export default function MenuPanel({
   closingSession: boolean
   onNavigate: (key: string) => void
   onLogout: () => void
-  onClose?: () => void
 }) {
   return (
     <>
-      <div
-        className={`flex items-center ${onClose ? 'justify-between border-b border-gray-100 p-2 dark:border-neutral-800' : ''}`}
-      >
-        <ProfileBlock
-          collapsed={collapsed}
-          username={username}
-          role={role}
-          loadingProfile={loadingProfile}
-        />
+      <ProfileBlock
+        username={username}
+        role={role}
+        loadingProfile={loadingProfile}
+      />
 
-        {onClose && (
-          <button
-            onClick={onClose}
-            aria-label="Cerrar menú"
-            className="mr-2 flex size-9 shrink-0 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-neutral-800"
-          >
-            <X size={18} />
-          </button>
-        )}
-      </div>
-
-      <div className="scrollbar-hide flex-1 overflow-y-auto px-2">
+      <div className="scrollbar-hide flex-1 overflow-y-auto px-2 py-2">
         <MenuList
           role={role!}
-          collapsed={collapsed}
           selectedKeys={selectedKeys}
           onNavigate={onNavigate}
         />
       </div>
 
       <div className="p-3">
-        <LogoutButton
-          collapsed={collapsed}
-          closing={closingSession}
-          onLogout={onLogout}
-        />
+        <LogoutButton closing={closingSession} onLogout={onLogout} />
       </div>
     </>
   )
