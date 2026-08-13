@@ -1,52 +1,30 @@
 import { theme as antdTheme, type ThemeConfig } from 'antd'
-import type { ThemeMode } from '@/hooks/useTheme'
-
-const primaryColor = '#1d4ed8'
-const primaryHover = '#2563eb'
-const secondaryColor = '#0f172a'
+import type { ThemeMode } from '@/config/theme'
+import { getThemeConfigForMode } from '@/config/theme'
 
 export const baseBorderRadius = 6
 
-const palette = {
-  light: {
-    baseBG: '#f4f7fb',
-    layoutBG: '#edf2f7',
-    textBase: '#0f172a',
-    borderColor: '#dfe7f1',
-    modalBG: '#ffffff',
-    maskBG: 'rgba(15, 23, 42, 0.5)',
-  },
-  dark: {
-    baseBG: '#0b1220',
-    layoutBG: '#0d1728',
-    textBase: '#e2e8f0',
-    borderColor: '#23314a',
-    modalBG: '#101c2f',
-    maskBG: 'rgba(2, 6, 23, 0.72)',
-  },
-}
-
 export const getAntdTheme = (mode: ThemeMode): ThemeConfig => {
-  const colors = palette[mode]
+  const colors = getThemeConfigForMode(mode)
 
   return {
     algorithm:
       mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
     token: {
-      colorPrimary: primaryColor,
-      colorPrimaryHover: primaryHover,
-      colorInfo: primaryColor,
-      colorSuccess: primaryColor,
-      colorWarning: primaryColor,
-      colorError: 'red',
+      colorPrimary: colors.primaryColor,
+      colorPrimaryHover: colors.primaryStrong,
+      colorInfo: colors.primaryColor,
+      colorSuccess: colors.primaryColor,
+      colorWarning: colors.primaryColor,
+      colorError: '#ef4444',
 
       fontFamily: 'system-ui, sans-serif',
 
-      colorBgBase: colors.baseBG,
-      colorBgLayout: colors.layoutBG,
+      colorBgBase: colors.bgBase,
+      colorBgLayout: colors.bgLayout,
 
       colorText: colors.textBase,
-      colorTextSecondary: secondaryColor,
+      colorTextSecondary: colors.textMuted,
 
       colorBorder: colors.borderColor,
       borderRadius: baseBorderRadius,
@@ -75,18 +53,18 @@ export const getAntdTheme = (mode: ThemeMode): ThemeConfig => {
       },
 
       Modal: {
-        colorBgMask: colors.maskBG,
-        colorBgElevated: colors.modalBG,
+        colorBgMask: 'rgba(15, 23, 42, 0.5)',
+        colorBgElevated: colors.bgElevated,
       },
 
       Button: {
         borderRadius: 6,
-        colorPrimaryHover: primaryHover,
-        colorPrimaryActive: primaryColor,
+        colorPrimaryHover: colors.primaryStrong,
+        colorPrimaryActive: colors.primaryColor,
       },
 
       Tooltip: {
-        colorBgBase: primaryColor,
+        colorBgBase: colors.primaryColor,
         colorText: '#ffffff',
         borderRadius: 6,
         padding: 8,
@@ -95,5 +73,4 @@ export const getAntdTheme = (mode: ThemeMode): ThemeConfig => {
   }
 }
 
-// Export por compatibilidad (tema claro por defecto)
 export const antd = getAntdTheme('light')

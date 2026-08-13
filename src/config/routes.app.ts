@@ -1,4 +1,4 @@
-import { LayoutDashboard, Key, Users } from 'lucide-react'
+import { LayoutDashboard, Key, Palette, Users } from 'lucide-react'
 import type { LucideProps } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { roles, type RoleName } from '@/enum/role'
@@ -75,6 +75,13 @@ const routeDefinitions: Record<RoutesEnum, RouteOverrides> = {
     title: 'Permisos',
     search: true,
     menu: { icon: Key, label: 'Permisos', order: 3 },
+  },
+  [RoutesEnum.DASHBOARD_THEME]: {
+    group: 'dashboard',
+    roles: [roles.super_admin, roles.admin, roles.all],
+    title: 'Tema',
+    search: false,
+    menu: { icon: Palette, label: 'Tema', order: 4 },
   },
   // Ejemplo pedido: una sección nueva "public/products", sin auth, sin
   // roles y sin tocar OutletContainer/AppOutlet/permission.app.ts.
