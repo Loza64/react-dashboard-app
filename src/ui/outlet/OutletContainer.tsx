@@ -8,18 +8,6 @@ import { routesConfig } from '@/config/routes.app'
 import NotFoundView from '@/views/NotFoundView'
 import { matchRoute } from '@/utils/route-matcher'
 
-/**
- * Punto único donde se resuelve qué ruta matchea y se decide, según su
- * `group`, quién la renderiza. No conoce el layout de ningún grupo en
- * particular (eso vive en cada Outlet, ej. DashboardOutlet).
- *
- * Para sumar un grupo nuevo con su propio layout (ej. "reports"):
- *   1. Crear ui/outlet/ReportsOutlet.tsx con su propia lógica/guard
- *   2. Agregar `if (routeData.group === 'reports') return <ReportsOutlet .../>`
- *      acá abajo
- * Los grupos que no tengan outlet propio (ej. "public") simplemente
- * renderizan sus children tal cual.
- */
 export default function OutletContainer({
   children,
   isMobile,
