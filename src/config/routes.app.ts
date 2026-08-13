@@ -4,16 +4,6 @@ import type { ComponentType } from 'react'
 import { roles, type RoleName } from '@/enum/role'
 import { RoutesEnum } from '@/enum/routes..app'
 
-/**
- * Un "grupo" describe cómo se comporta una sección completa de rutas:
- * si requiere sesión, y qué roles tienen acceso por defecto.
- *
- * Para agregar una sección nueva (ej. "reports" que requiera auth pero sin
- * roles específicos) solo hay que sumar una entrada aquí. OutletContainer
- * usa el `group` únicamente para decidir qué Outlet renderiza cada ruta
- * (ver ui/outlet/OutletContainer.tsx); el layout en sí vive en el Outlet
- * de cada grupo (ej. DashboardOutlet), no acá.
- */
 export const routeGroups = {
   public: {
     auth: false,
@@ -30,7 +20,6 @@ export type RouteGroup = keyof typeof routeGroups
 export type RouteMenuMeta = {
   icon: ComponentType<LucideProps>
   label: string
-  /** Controla el orden dentro del sidebar. Menor = más arriba. */
   order: number
 }
 
@@ -40,14 +29,7 @@ type RouteOverrides = {
   permission?: string[]
   title: string
   search?: boolean
-  /** Si se define, la ruta aparece automáticamente en el menú lateral. */
   menu?: RouteMenuMeta
-  /**
-   * Solo para rutas públicas: si un usuario YA logueado entra acá, se lo
-   * redirige al dashboard en vez de mostrarle la página (útil para
-   * '/login' o '/'). Rutas públicas normales (ej. '/public/products') no
-   * necesitan esto: deben verse igual con o sin sesión.
-   */
   guestOnly?: boolean
 }
 
@@ -62,15 +44,6 @@ export type RouteConfig = {
   guestOnly: boolean
 }
 
-/**
- * Registro central de rutas. Para agregar una ruta nueva:
- *   1. Sumar su path en `RoutesEnum` (src/enum/routes..app.ts)
- *   2. Registrarla acá con su `group` y su `title`
- *   3. Crear el archivo en src/pages siguiendo la misma carpeta del path
- *
- * Con eso el guard de autenticación/roles, el título+buscador del header
- * y el ítem del menú lateral (si se define `menu`) quedan listos solos.
- */
 const routeDefinitions: Record<RoutesEnum, RouteOverrides> = {
   [RoutesEnum.ROOT]: {
     group: 'public',

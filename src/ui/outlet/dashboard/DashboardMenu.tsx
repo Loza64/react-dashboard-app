@@ -1,12 +1,12 @@
+import { menu, selectMenuKeys } from '@/config/menu'
+import { searchRecoil } from '@/constants/recoil'
+import { RoleName } from '@/enum/role'
+import useRecoilStorage from '@/hooks/core/useRecoilStorage'
+import { useSession } from '@/hooks/useSession'
+import { MenuItem } from '@/models/app/menu'
 import { ChevronLeft, ChevronRight, Loader2, LogOut, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { menu, selectMenuKeys } from '@/config/menu'
-import { searchRecoil } from '@/constants/recoil'
-import type { RoleName } from '@/enum/role'
-import useRecoilStorage from '@/hooks/core/useRecoilStorage'
-import { useSession } from '@/hooks/useSession'
-import type { MenuItem } from '@/models/app/menu'
 
 const isAuthorized = (item: MenuItem, role: RoleName) =>
   item.authorized.includes(role) || item.authorized.includes('*')
@@ -197,7 +197,6 @@ export default function DashboardMenu({
 
   return (
     <>
-      {/* Sidebar de escritorio */}
       <aside className="relative hidden h-dvh shrink-0 lg:flex">
         <div
           className={`flex h-dvh flex-col border-r border-gray-100 bg-white transition-all duration-300 ease-out dark:border-neutral-800 dark:bg-neutral-900 ${

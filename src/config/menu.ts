@@ -3,12 +3,6 @@ import type { MenuItem } from '@/models/app/menu'
 import { RoutesEnum } from '@/enum/routes..app'
 import { routesConfig, type RouteMenuMeta } from './routes.app'
 
-/**
- * El menú lateral ya no se mantiene a mano: se arma solo a partir de las
- * rutas registradas en `routesConfig` que definen `menu`. Agregar una ruta
- * nueva al sidebar es agregar el bloque `menu: {...}` en su definición de
- * routes.app.ts, nada más.
- */
 function buildMenuFromRoutes(): MenuItem[] {
   const items: {
     path: RoutesEnum
