@@ -6,7 +6,6 @@ import {
   saveThemeConfig,
   type ThemeColorTokens,
   type ThemeConfig,
-  type ThemeMode,
 } from '@/config/theme'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -27,33 +26,33 @@ const colorFields: Array<{ key: keyof ThemeColorTokens; label: string }> = [
 ]
 
 export default function ThemeSettingsView() {
-  const { theme, updateThemeColors, resetThemeColors } = useTheme()
-  const [activeMode, setActiveMode] = useState<ThemeMode>(theme)
+  const { theme: activeMode } = useTheme()
   const [config, setConfig] = useState<ThemeConfig>(() =>
     getStoredThemeConfig()
   )
 
-  const saveConfig = (nextConfig: ThemeConfig) => {
-    setConfig(nextConfig)
-    saveThemeConfig(nextConfig)
-    updateThemeColors(nextConfig[activeMode], activeMode)
-  }
-
   const handleColorChange = (key: keyof ThemeColorTokens, value: string) => {
-    const nextConfig: ThemeConfig = {
-      ...config,
+    setConfig((previous) => ({
+      ...previous,
       [activeMode]: {
-        ...config[activeMode],
+        ...previous[activeMode],
         [key]: value,
       },
-    }
+    }))
+  }
 
-    saveConfig(nextConfig)
+  const handleSave = () => {
+    saveThemeConfig(config)
+    window.location.reload()
   }
 
   const handleReset = () => {
-    setConfig(DEFAULT_THEME_CONFIG)
-    resetThemeColors()
+    const resetConfig: ThemeConfig = {
+      ...config,
+      [activeMode]: DEFAULT_THEME_CONFIG[activeMode],
+    }
+    saveThemeConfig(resetConfig)
+    window.location.reload()
   }
 
   return (
@@ -64,21 +63,14 @@ export default function ThemeSettingsView() {
             <Typography.Title level={4} style={{ margin: 0 }}>
               Configuración del tema
             </Typography.Title>
+            <Typography.Text type="secondary">
+              Estás editando el tema{' '}
+              {activeMode === 'dark' ? 'oscuro' : 'claro'}, que es el que tienes
+              activo. Cambia de modo (sol/luna) para configurar el otro.
+            </Typography.Text>
           </div>
 
           <Space>
-            <Button
-              type={activeMode === 'light' ? 'primary' : 'default'}
-              onClick={() => setActiveMode('light')}
-            >
-              Claro
-            </Button>
-            <Button
-              type={activeMode === 'dark' ? 'primary' : 'default'}
-              onClick={() => setActiveMode('dark')}
-            >
-              Oscuro
-            </Button>
             <Button danger onClick={handleReset}>
               Restablecer
             </Button>
@@ -130,7 +122,7 @@ export default function ThemeSettingsView() {
         </div>
 
         <div className="mt-6 flex justify-end">
-          <Button type="primary" onClick={() => saveConfig(config)}>
+          <Button type="primary" onClick={handleSave}>
             Guardar cambios
           </Button>
         </div>

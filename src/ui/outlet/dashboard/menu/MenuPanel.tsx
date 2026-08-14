@@ -30,7 +30,7 @@ export default function MenuPanel({
 
       <div className="scrollbar-hide flex-1 overflow-y-auto px-2 py-2">
         <MenuList
-          role={role!}
+          role={role}
           selectedKeys={selectedKeys}
           onNavigate={onNavigate}
         />

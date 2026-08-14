@@ -7,7 +7,7 @@ export default function MenuList({
   selectedKeys,
   onNavigate,
 }: {
-  role: RoleName
+  role?: RoleName
   selectedKeys: string[]
   onNavigate: (key: string) => void
 }) {

@@ -1,8 +1,8 @@
 import type { RoleName } from '@/enum/role'
 import type { MenuItem } from '@/models/app/menu'
 
-const isAuthorized = (item: MenuItem, role: RoleName) =>
-  item.authorized.includes(role) || item.authorized.includes('*')
+const isAuthorized = (item: MenuItem, role?: RoleName) =>
+  item.authorized.includes('*') || (!!role && item.authorized.includes(role))
 
 export default function NavItem({
   item,
@@ -12,7 +12,7 @@ export default function NavItem({
   depth = 0,
 }: {
   item: MenuItem
-  role: RoleName
+  role?: RoleName
   selectedKeys: string[]
   onNavigate: (key: string) => void
   depth?: number

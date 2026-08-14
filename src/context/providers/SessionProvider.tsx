@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useEffect } from 'react'
+import { type ReactNode, useCallback } from 'react'
 import { message } from 'antd'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -68,12 +68,6 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
       errorResponse({ error })
     }
   }, [messageApi, navigate, location.pathname, queryClient])
-
-  useEffect(() => {
-    if (!profileLoading && !token && location.pathname !== RoutesEnum.LOGIN) {
-      navigate(RoutesEnum.LOGIN, { replace: true })
-    }
-  }, [profileLoading, token, location.pathname, navigate])
 
   const value: SessionType = {
     profile,

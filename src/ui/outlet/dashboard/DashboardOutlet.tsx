@@ -1,14 +1,12 @@
-import { Loader2, Menu as MenuIcon, Moon, Search, Sun } from 'lucide-react'
+import { Menu as MenuIcon, Moon, Search, Sun } from 'lucide-react'
 import type React from 'react'
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import DashboardMenu from './menu'
 import { useMenuVisibility } from './menu/useMenuVisibility'
 import { useSession } from '@/hooks/useSession'
-import ForbiddenView from '@/views/ForbiddenView'
 import { searchRecoil } from '@/constants/recoil'
 import type { RouteConfig } from '@/config/routes.app'
-import { isAuthorized } from '@/utils/permission.app'
 import useRecoilStorage from '@/hooks/core/useRecoilStorage'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -27,30 +25,14 @@ export default function DashboardOutlet({
     close: closeMenu,
   } = useMenuVisibility()
 
-  const { profile: user, loading } = useSession()
+  const { profile: user } = useSession()
   const location = useLocation()
 
   const currentPath = location.pathname
-  const role = user?.role?.name
-
-  const allowed = useMemo(
-    () => (role ? isAuthorized(role, currentPath) : false),
-    [role, currentPath]
-  )
 
   useEffect(() => {
     setSearch('')
   }, [currentPath, setSearch])
-
-  if (loading.profile) {
-    return (
-      <div className="bg-layout flex h-screen items-center justify-center">
-        <Loader2 className="text-primary animate-spin" size={32} />
-      </div>
-    )
-  }
-
-  if (!allowed) return <ForbiddenView />
 
   return (
     <div className="bg-layout flex min-h-screen w-full">

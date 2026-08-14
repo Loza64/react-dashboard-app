@@ -62,8 +62,8 @@ export default function AuthView() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-100">
-      <div className="mx-5 flex min-h-[60dvh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-lg md:flex-row">
+    <div className="bg-layout fixed inset-0 flex items-center justify-center">
+      <div className="border-default bg-surface mx-5 flex min-h-[60dvh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border shadow-lg md:flex-row">
         <div className="flex w-full flex-col justify-center p-6 md:w-1/2">
           <Tabs defaultActiveKey="login" centered>
             <Tabs.TabPane tab="Iniciar sesión" key="login">
@@ -102,7 +102,6 @@ export default function AuthView() {
               </Form>
             </Tabs.TabPane>
 
-            {/* 📝 SIGNUP */}
             <Tabs.TabPane tab="Registrarse" key="signup">
               <Form<SignUpProps>
                 form={signUpForm}
