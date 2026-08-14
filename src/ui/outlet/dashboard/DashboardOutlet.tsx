@@ -62,9 +62,9 @@ export default function DashboardOutlet({
             <button
               onClick={toggleMenu}
               aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú'}
-              className="border-default bg-surface flex shrink-0 items-center justify-center rounded-full border p-2 shadow-sm transition-colors hover:bg-[var(--bg-contrast)]"
+              className="border-default bg-surface flex shrink-0 items-center justify-center rounded-full border p-2 shadow-sm transition-colors hover:bg-(--bg-contrast)"
             >
-              <MenuIcon size={18} className="text-[var(--text-primary)]" />
+              <MenuIcon size={18} className="text-(--text-primary)" />
             </button>
 
             <div className="text-primary flex min-w-0 flex-col">
@@ -79,13 +79,13 @@ export default function DashboardOutlet({
               <div className="relative hidden items-center sm:flex">
                 <Search
                   size={16}
-                  className="pointer-events-none absolute left-3 text-[var(--primary)]"
+                  className="pointer-events-none absolute left-3 text-(--primary)"
                 />
                 <input
                   placeholder="Buscar"
                   value={search ?? ''}
                   onChange={(event) => setSearch(event.target.value)}
-                  className="border-default bg-surface w-full max-w-80 rounded-lg border py-2 pr-3 pl-9 text-sm text-[var(--text-primary)] transition-colors outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--primary)]"
+                  className="border-default bg-surface w-full max-w-80 rounded-lg border py-2 pr-3 pl-9 text-sm text-(--text-primary) transition-colors outline-none placeholder:text-(--text-secondary) focus:border-(--primary)"
                 />
               </div>
             )}
@@ -93,12 +93,12 @@ export default function DashboardOutlet({
             <button
               onClick={toggleTheme}
               aria-label="Cambiar tema"
-              className="border-default bg-surface flex items-center justify-center rounded-full border p-2 text-[var(--text-primary)] shadow-sm transition-colors hover:bg-[var(--bg-contrast)]"
+              className="border-default bg-surface flex items-center justify-center rounded-full border p-2 text-(--text-primary) shadow-sm transition-colors hover:bg-(--bg-contrast)"
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-[var(--primary)] bg-[var(--primary)]/10 text-sm font-semibold text-[var(--primary)]">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-(--primary) bg-(--primary)/10 text-sm font-semibold text-(--primary)">
               {(user?.username?.[0] ?? '?').toUpperCase()}
             </div>
           </div>
@@ -108,13 +108,13 @@ export default function DashboardOutlet({
           <div className="relative flex items-center px-4 pb-3 sm:hidden">
             <Search
               size={16}
-              className="pointer-events-none absolute left-7 text-[var(--primary)]"
+              className="pointer-events-none absolute left-7 text-(--primary)"
             />
             <input
               placeholder="Buscar"
               value={search ?? ''}
               onChange={(event) => setSearch(event.target.value)}
-              className="border-default bg-surface w-full rounded-lg border py-2 pr-3 pl-9 text-sm text-[var(--text-primary)] transition-colors outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--primary)]"
+              className="border-default bg-surface w-full rounded-lg border py-2 pr-3 pl-9 text-sm text-(--text-primary) transition-colors outline-none placeholder:text-(--text-secondary) focus:border-(--primary)"
             />
           </div>
         )}

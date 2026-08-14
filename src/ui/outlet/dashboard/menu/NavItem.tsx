@@ -33,12 +33,12 @@ export default function NavItem({
         onClick={() => onNavigate(item.key)}
         className={`dashboard-nav-item group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-extrabold transition-colors ${
           depth > 0 ? 'pl-8' : ''
-        } ${active ? 'is-active bg-[var(--primary)] text-white shadow-sm' : 'text-[var(--text-primary)]'} `}
+        } ${active ? 'is-active bg-(--primary) text-white shadow-sm' : 'text-(--text-primary)'} `}
       >
         {item.icon && (
           <span
             className={`flex items-center justify-center ${
-              active ? 'text-white' : 'text-[var(--text-secondary)]'
+              active ? 'text-white' : 'text-(--text-secondary)'
             }`}
           >
             {item.icon}
