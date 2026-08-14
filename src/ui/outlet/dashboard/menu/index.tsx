@@ -1,18 +1,6 @@
 import MenuPanel from './MenuPanel'
 import { useDashboardMenu } from './useDashboardMenu'
 
-/**
- * Menú único para desktop y mobile: mismo componente, mismo estado `open`.
- *
- * - Mobile (< lg): flota como drawer -> `fixed`, con sombra y backdrop,
- *   se abre/cierra deslizándose (`translate-x`).
- * - Desktop (>= lg): vive en el flujo -> `lg:static`, sin backdrop ni
- *   sombra, se abre/cierra colapsando su ancho (`w-64` <-> `w-0`), por lo
- *   que "empuja" el contenido en vez de flotar sobre él.
- *
- * En ambos casos el menú termina completamente oculto cuando `open` es
- * falso; la diferencia es solo cómo se oculta.
- */
 export default function DashboardMenu({
   open,
   onClose,
