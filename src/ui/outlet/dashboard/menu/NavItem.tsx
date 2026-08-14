@@ -31,18 +31,14 @@ export default function NavItem({
     <div>
       <button
         onClick={() => onNavigate(item.key)}
-        className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-extrabold transition-colors ${
+        className={`dashboard-nav-item group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-extrabold transition-colors ${
           depth > 0 ? 'pl-8' : ''
-        } ${
-          active
-            ? 'bg-[var(--primary-color)] text-white shadow-sm'
-            : 'text-[var(--text-base)] hover:bg-[var(--bg-muted)]'
-        }`}
+        } ${active ? 'is-active bg-[var(--primary)] text-white shadow-sm' : 'text-[var(--text-primary)]'} `}
       >
         {item.icon && (
           <span
             className={`flex items-center justify-center ${
-              active ? 'text-white' : 'text-[var(--text-muted)]'
+              active ? 'text-white' : 'text-[var(--text-secondary)]'
             }`}
           >
             {item.icon}

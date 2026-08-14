@@ -1,24 +1,28 @@
 export type ThemeMode = 'light' | 'dark'
 
 export type ThemeColorTokens = {
-  primaryColor: string
-  primaryStrong: string
-  primarySoft: string
-  secondaryColor: string
+  // Semantic colors
+  primary: string
+  primaryHover: string
+  secondary: string
 
+  // Background layers
   bgBase: string
-  bgLayout: string
   bgElevated: string
-  bgPanel: string
-  bgMuted: string
-  bgSubtle: string
+  bgContrast: string
 
-  textBase: string
-  textMuted: string
-  textSoft: string
+  // Text
+  textPrimary: string
+  textSecondary: string
 
-  borderColor: string
-  borderStrong: string
+  // Borders
+  border: string
+
+  // Status colors (semantic)
+  success: string
+  warning: string
+  error: string
+  info: string
 }
 
 export type ThemeConfig = {
@@ -30,57 +34,69 @@ export const THEME_STORAGE_KEY = 'dashboard-theme-config'
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
   light: {
-    primaryColor: '#1d4ed8',
-    primaryStrong: '#1e3a8a',
-    primarySoft: '#dbeafe',
-    secondaryColor: '#0f172a',
+    // Semantic colors
+    primary: '#1d4ed8',
+    primaryHover: '#1e3a8a',
+    secondary: '#64748b',
+
+    // Background layers
     bgBase: '#f4f7fb',
-    bgLayout: '#edf2f7',
     bgElevated: '#ffffff',
-    bgPanel: '#ffffff',
-    bgMuted: '#e8eef8',
-    bgSubtle: '#f8fafc',
-    textBase: '#0f172a',
-    textMuted: '#475569',
-    textSoft: '#64748b',
-    borderColor: '#dfe7f1',
-    borderStrong: '#c7d2e0',
+    bgContrast: '#edf2f7',
+
+    // Text
+    textPrimary: '#0f172a',
+    textSecondary: '#475569',
+
+    // Borders
+    border: '#dfe7f1',
+
+    // Status colors
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    info: '#1d4ed8',
   },
   dark: {
-    primaryColor: '#8aa8ff',
-    primaryStrong: '#bfd1ff',
-    primarySoft: 'rgba(138, 168, 255, 0.18)',
-    secondaryColor: '#c9d9ff',
+    // Semantic colors
+    primary: '#8aa8ff',
+    primaryHover: '#bfd1ff',
+    secondary: '#a5b4cf',
+
+    // Background layers
     bgBase: '#0b1220',
-    bgLayout: '#0d1728',
     bgElevated: '#101c2f',
-    bgPanel: '#132238',
-    bgMuted: '#1a2940',
-    bgSubtle: '#0f1b2d',
-    textBase: '#e2e8f0',
-    textMuted: '#a5b4cf',
-    textSoft: '#8aa0c2',
-    borderColor: '#23314a',
-    borderStrong: '#2f4467',
+    bgContrast: '#0d1728',
+
+    // Text
+    textPrimary: '#e2e8f0',
+    textSecondary: '#a5b4cf',
+
+    // Borders
+    border: '#23314a',
+
+    // Status colors
+    success: '#34d399',
+    warning: '#fbbf24',
+    error: '#f87171',
+    info: '#8aa8ff',
   },
 }
 
 const cssMapping: Record<keyof ThemeColorTokens, string> = {
-  primaryColor: '--primary-color',
-  primaryStrong: '--primary-strong',
-  primarySoft: '--primary-soft',
-  secondaryColor: '--secondary-color',
+  primary: '--primary',
+  primaryHover: '--primary-hover',
+  secondary: '--secondary',
   bgBase: '--bg-base',
-  bgLayout: '--bg-layout',
   bgElevated: '--bg-elevated',
-  bgPanel: '--bg-panel',
-  bgMuted: '--bg-muted',
-  bgSubtle: '--bg-subtle',
-  textBase: '--text-base',
-  textMuted: '--text-muted',
-  textSoft: '--text-soft',
-  borderColor: '--border-color',
-  borderStrong: '--border-strong',
+  bgContrast: '--bg-contrast',
+  textPrimary: '--text-primary',
+  textSecondary: '--text-secondary',
+  border: '--border',
+  success: '--success',
+  warning: '--warning',
+  error: '--error',
+  info: '--info',
 }
 
 export const getStoredThemeConfig = (): ThemeConfig => {
@@ -91,11 +107,21 @@ export const getStoredThemeConfig = (): ThemeConfig => {
     const parsed = JSON.parse(raw) as Partial<ThemeConfig>
     if (!parsed || typeof parsed !== 'object') return DEFAULT_THEME_CONFIG
 
+    const requiredTokens = Object.keys(DEFAULT_THEME_CONFIG.light)
+    const isValid = (obj: Record<string, unknown>) =>
+      requiredTokens.every((key) => typeof obj[key] === 'string' && obj[key])
+
+    if (!isValid(parsed.light || {}) || !isValid(parsed.dark || {})) {
+      console.warn('Stored theme config is invalid, using defaults')
+      return DEFAULT_THEME_CONFIG
+    }
+
     return {
       light: { ...DEFAULT_THEME_CONFIG.light, ...parsed.light },
       dark: { ...DEFAULT_THEME_CONFIG.dark, ...parsed.dark },
     }
-  } catch {
+  } catch (error) {
+    console.error('Failed to parse theme config:', error)
     return DEFAULT_THEME_CONFIG
   }
 }

@@ -1,5 +1,3 @@
-
-
 @import 'antd/dist/reset.css';
 @import 'tailwindcss';
 @import './components/and-components';
@@ -9,51 +7,49 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --primary-color: #1d4ed8;
-  --primary-strong: #1e3a8a;
-  --primary-soft: #dbeafe;
-  --secondary-color: #0f172a;
+  --primary: #1d4ed8;
+  --primary-hover: #1e3a8a;
+  --secondary: #64748b;
 
   --bg-base: #f4f7fb;
-  --bg-layout: #edf2f7;
   --bg-elevated: #ffffff;
-  --bg-panel: #ffffff;
-  --bg-muted: #e8eef8;
-  --bg-subtle: #f8fafc;
+  --bg-contrast: #edf2f7;
 
-  --text-base: #0f172a;
-  --text-muted: #475569;
-  --text-soft: #64748b;
-  --border-color: #dfe7f1;
-  --border-strong: #c7d2e0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+
+  --border: #dfe7f1;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #1d4ed8;
   --shadow-soft: rgba(15, 23, 42, 0.08);
 }
 
 .dark {
-  --primary-color: #8aa8ff;
-  --primary-strong: #bfd1ff;
-  --primary-soft: rgba(138, 168, 255, 0.18);
-  --secondary-color: #c9d9ff;
+  --primary: #8aa8ff;
+  --primary-hover: #bfd1ff;
+  --secondary: #a5b4cf;
 
   --bg-base: #0b1220;
-  --bg-layout: #0d1728;
   --bg-elevated: #101c2f;
-  --bg-panel: #132238;
-  --bg-muted: #1a2940;
-  --bg-subtle: #0f1b2d;
+  --bg-contrast: #0d1728;
 
-  --text-base: #e2e8f0;
-  --text-muted: #a5b4cf;
-  --text-soft: #8aa0c2;
-  --border-color: #23314a;
-  --border-strong: #2f4467;
+  --text-primary: #e2e8f0;
+  --text-secondary: #a5b4cf;
+
+  --border: #23314a;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --error: #f87171;
+  --info: #8aa8ff;
   --shadow-soft: rgba(2, 6, 23, 0.42);
 }
 
 html,
 body {
-  background-color: var(--bg-layout);
-  color: var(--text-base);
+  background-color: var(--bg-contrast);
+  color: var(--text-primary);
   transition:
     background-color 0.2s ease-in-out,
     color 0.2s ease-in-out;
@@ -64,7 +60,7 @@ body {
 }
 
 .bg-layout {
-  background-color: var(--bg-layout);
+  background-color: var(--bg-contrast);
 }
 
 .bg-surface {
@@ -72,50 +68,61 @@ body {
 }
 
 .bg-panel {
-  background-color: var(--bg-panel);
+  background-color: var(--bg-elevated);
 }
 
 .bg-muted {
-  background-color: var(--bg-muted);
+  background-color: var(--bg-contrast);
 }
 
 .border-default {
-  border-color: var(--border-color);
+  border-color: var(--border);
 }
 
 .text-muted {
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .text-soft {
-  color: var(--text-soft);
+  color: var(--text-secondary);
 }
 
-*{
+* {
   font-family: system-ui;
 }
 
 .border-primary {
-    border-color:  var(--primary-color);
+  border-color: var(--primary);
 }
 
 .text-primary {
-  color: var(--primary-color);
+  color: var(--text-primary);
 }
 
 .text-secondary {
-  color: var(--secondary-color);
+  color: var(--text-secondary);
 }
 
 .bg-primary {
-  background-color: var(--primary-color);
+  background-color: var(--primary);
+}
+
+.dashboard-nav-item:hover {
+  background-color: color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.dashboard-nav-item.is-active:hover {
+  background-color: var(--primary-hover);
+}
+
+.bg-primary-hover {
+  background-color: var(--primary-hover);
 }
 
 .bg-secondary {
-  background-color: var(--secondary-color);
+  background-color: var(--secondary);
 }
 
 .ant-select {
   width: 100% !important;
 }
-

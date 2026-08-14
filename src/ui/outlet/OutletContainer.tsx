@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import DashboardOutlet from './dashboard/DashboardOutlet'
 import { useSession } from '@/hooks/useSession'
 import { RoutesEnum } from '@/enum/routes..app'
-import { routesConfig } from '@/config/routes.app'
+import { getRouteShell, routesConfig } from '@/config/routes.app'
 import NotFoundView from '@/views/NotFoundView'
 import { matchRoute } from '@/utils/route-matcher'
 
@@ -19,13 +19,16 @@ export default function OutletContainer({
 
   const currentPath = location.pathname
 
-  const matchedRouteKey = useMemo(() => {
-    return (Object.keys(routesConfig) as RoutesEnum[]).find((routeKey) =>
-      matchRoute(routeKey, currentPath)
-    )
-  }, [currentPath])
+  const matchedRouteKey = useMemo(
+    () =>
+      (Object.keys(routesConfig) as RoutesEnum[]).find((routeKey) =>
+        matchRoute(routeKey, currentPath)
+      ),
+    [currentPath]
+  )
 
   const routeData = matchedRouteKey ? routesConfig[matchedRouteKey] : undefined
+  const routeShell = getRouteShell(routeData)
 
   useEffect(() => {
     if (routeData?.guestOnly && user) {
@@ -37,9 +40,12 @@ export default function OutletContainer({
 
   if (routeData.guestOnly && user) return null
 
-  if (routeData.group === 'dashboard') {
-    return <DashboardOutlet routeData={routeData}>{children}</DashboardOutlet>
+  const renderByShell = {
+    dashboard: (
+      <DashboardOutlet routeData={routeData}>{children}</DashboardOutlet>
+    ),
+    public: children,
   }
 
-  return children
+  return renderByShell[routeShell ?? 'public']
 }

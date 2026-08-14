@@ -30,28 +30,34 @@ export function useTheme() {
     const config = getStoredThemeConfig()
     const palette = config[mode]
 
+    // Aplicar clase dark al elemento raíz
     root.classList.toggle('dark', mode === 'dark')
     root.style.colorScheme = mode
 
-    Object.entries({
-      '--primary-color': palette.primaryColor,
-      '--primary-strong': palette.primaryStrong,
-      '--primary-soft': palette.primarySoft,
-      '--secondary-color': palette.secondaryColor,
+    // Establecer todas las variables CSS basadas en el modo
+    const cssVariables = {
+      '--primary': palette.primary,
+      '--primary-hover': palette.primaryHover,
+      '--secondary': palette.secondary,
       '--bg-base': palette.bgBase,
-      '--bg-layout': palette.bgLayout,
       '--bg-elevated': palette.bgElevated,
-      '--bg-panel': palette.bgPanel,
-      '--bg-muted': palette.bgMuted,
-      '--bg-subtle': palette.bgSubtle,
-      '--text-base': palette.textBase,
-      '--text-muted': palette.textMuted,
-      '--text-soft': palette.textSoft,
-      '--border-color': palette.borderColor,
-      '--border-strong': palette.borderStrong,
-    }).forEach(([property, value]) => {
-      root.style.setProperty(property, value)
+      '--bg-contrast': palette.bgContrast,
+      '--text-primary': palette.textPrimary,
+      '--text-secondary': palette.textSecondary,
+      '--border': palette.border,
+      '--success': palette.success,
+      '--warning': palette.warning,
+      '--error': palette.error,
+      '--info': palette.info,
+    }
+
+    Object.entries(cssVariables).forEach(([property, value]) => {
+      if (value) {
+        root.style.setProperty(property, value)
+      }
     })
+
+    void root.offsetHeight
   }, [mode])
 
   const toggleTheme = useCallback(() => {
@@ -73,15 +79,18 @@ export function useTheme() {
       }
 
       saveThemeConfig(mergedConfig)
-      applyThemePalette(mode, mergedConfig)
+      applyThemePalette(targetMode, mergedConfig)
     },
     [mode]
   )
 
-  const resetThemeColors = useCallback(() => {
-    saveThemeConfig(DEFAULT_THEME_CONFIG)
-    applyThemePalette(mode, DEFAULT_THEME_CONFIG)
-  }, [mode])
+  const resetThemeColors = useCallback(
+    (targetMode: ThemeMode = mode) => {
+      saveThemeConfig(DEFAULT_THEME_CONFIG)
+      applyThemePalette(targetMode, DEFAULT_THEME_CONFIG)
+    },
+    [mode]
+  )
 
   return {
     theme: mode,

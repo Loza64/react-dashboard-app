@@ -11,22 +11,22 @@ export const getAntdTheme = (mode: ThemeMode): ThemeConfig => {
     algorithm:
       mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
     token: {
-      colorPrimary: colors.primaryColor,
-      colorPrimaryHover: colors.primaryStrong,
-      colorInfo: colors.primaryColor,
-      colorSuccess: colors.primaryColor,
-      colorWarning: colors.primaryColor,
-      colorError: '#ef4444',
+      colorPrimary: colors.primary,
+      colorPrimaryHover: colors.primaryHover,
+      colorInfo: colors.info,
+      colorSuccess: colors.success,
+      colorWarning: colors.warning,
+      colorError: colors.error,
 
       fontFamily: 'system-ui, sans-serif',
 
       colorBgBase: colors.bgBase,
-      colorBgLayout: colors.bgLayout,
+      colorBgLayout: colors.bgContrast,
 
-      colorText: colors.textBase,
-      colorTextSecondary: colors.textMuted,
+      colorText: colors.textPrimary,
+      colorTextSecondary: colors.textSecondary,
 
-      colorBorder: colors.borderColor,
+      colorBorder: colors.border,
       borderRadius: baseBorderRadius,
     },
 
@@ -35,7 +35,7 @@ export const getAntdTheme = (mode: ThemeMode): ThemeConfig => {
         controlHeight: 40,
         borderRadius: 6,
         paddingInline: 12,
-        colorBorder: colors.borderColor,
+        colorBorder: colors.border,
       },
 
       InputNumber: {
@@ -49,7 +49,7 @@ export const getAntdTheme = (mode: ThemeMode): ThemeConfig => {
 
       Table: {
         borderRadius: 6,
-        borderColor: colors.borderColor,
+        borderColor: colors.border,
       },
 
       Modal: {
@@ -59,13 +59,18 @@ export const getAntdTheme = (mode: ThemeMode): ThemeConfig => {
 
       Button: {
         borderRadius: 6,
-        colorPrimaryHover: colors.primaryStrong,
-        colorPrimaryActive: colors.primaryColor,
+        colorPrimary: colors.primary,
+        colorPrimaryHover: colors.primaryHover,
+        colorPrimaryActive: colors.primary,
+        colorPrimaryBg: colors.primary,
+        colorPrimaryBgHover: colors.primaryHover,
+        colorPrimaryText: '#ffffff',
+        colorPrimaryBorder: colors.primary,
       },
 
       Tooltip: {
-        colorBgBase: colors.primaryColor,
-        colorText: '#ffffff',
+        colorBgBase: colors.primary,
+        colorText: colors.bgBase,
         borderRadius: 6,
         padding: 8,
       },

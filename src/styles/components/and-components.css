@@ -4,7 +4,7 @@
   height: 100%;
 }
 
-.ant-menu-item{
+.ant-menu-item {
   @apply font-extrabold
 }
 
@@ -13,7 +13,7 @@
   align-items: center !important;
   justify-content: center !important;
   height: 100%;
-   margin-left: -3.7px !important;
+  margin-left: -3.7px !important;
 }
 
 .ant-image-img {
@@ -24,12 +24,12 @@
 }
 
 .ant-menu-item-selected {
-  background-color: var(--primary-color) !important;
+  background-color: var(--primary) !important;
   color: white !important;
 }
 
 .ant-menu-item-selected:hover {
-  background-color: var(--primary-color) !important;
+  background-color: var(--primary-hover) !important;
   color: white !important;
 }
 

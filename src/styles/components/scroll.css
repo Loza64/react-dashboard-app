@@ -1,14 +1,13 @@
-
 .scrollbar-hide {
-  overflow-y: auto;      
-  scrollbar-width: thin;    
+  overflow-y: auto;
+  scrollbar-width: thin;
   scrollbar-color: transparent transparent;
-  -ms-overflow-style: auto; 
+  -ms-overflow-style: auto;
   transition: all 0.3s ease-in-out;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  width: 0px; 
+  width: 0px;
 }
 
 .scrollbar-hide::-webkit-scrollbar-track {
@@ -22,7 +21,7 @@
 }
 
 .scrollbar-hide:hover {
-  scrollbar-color: var(--primary-color) transparent;
+  scrollbar-color: var(--primary) transparent;
 }
 
 .scrollbar-hide:hover::-webkit-scrollbar {
@@ -30,5 +29,5 @@
 }
 
 .scrollbar-hide:hover::-webkit-scrollbar-thumb {
-  background-color: var(--primary-color);
+  background-color: var(--primary);
 }

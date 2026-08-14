@@ -11,21 +11,19 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 
 const colorFields: Array<{ key: keyof ThemeColorTokens; label: string }> = [
-  { key: 'primaryColor', label: 'Primario' },
-  { key: 'primaryStrong', label: 'Primario fuerte' },
-  { key: 'primarySoft', label: 'Primario suave' },
-  { key: 'secondaryColor', label: 'Secundario' },
-  { key: 'bgBase', label: 'Fondo base' },
-  { key: 'bgLayout', label: 'Fondo del layout' },
-  { key: 'bgElevated', label: 'Fondo elevado' },
-  { key: 'bgPanel', label: 'Panel' },
-  { key: 'bgMuted', label: 'Muted' },
-  { key: 'bgSubtle', label: 'Subtle' },
-  { key: 'textBase', label: 'Texto principal' },
-  { key: 'textMuted', label: 'Texto secundario' },
-  { key: 'textSoft', label: 'Texto suave' },
-  { key: 'borderColor', label: 'Borde' },
-  { key: 'borderStrong', label: 'Borde fuerte' },
+  { key: 'primary', label: 'Color Primario' },
+  { key: 'primaryHover', label: 'Primario (Hover)' },
+  { key: 'secondary', label: 'Color Secundario' },
+  { key: 'bgBase', label: 'Fondo Base' },
+  { key: 'bgElevated', label: 'Fondo Elevado' },
+  { key: 'bgContrast', label: 'Fondo Contraste' },
+  { key: 'textPrimary', label: 'Texto Principal' },
+  { key: 'textSecondary', label: 'Texto Secundario' },
+  { key: 'border', label: 'Borde' },
+  { key: 'success', label: 'Éxito' },
+  { key: 'warning', label: 'Advertencia' },
+  { key: 'error', label: 'Error' },
+  { key: 'info', label: 'Información' },
 ]
 
 export default function ThemeSettingsView() {
@@ -66,9 +64,6 @@ export default function ThemeSettingsView() {
             <Typography.Title level={4} style={{ margin: 0 }}>
               Configuración del tema
             </Typography.Title>
-            <Typography.Text type="secondary">
-              Personaliza la paleta del dashboard y guárdala en localStorage.
-            </Typography.Text>
           </div>
 
           <Space>
@@ -96,13 +91,13 @@ export default function ThemeSettingsView() {
           {colorFields.map((field) => (
             <div
               key={`${activeMode}-${field.key}`}
-              className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-subtle)] p-3"
+              className="rounded-lg border border-[var(--border)] bg-[var(--bg-contrast)] p-3"
             >
               <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-sm font-medium text-[var(--text-base)]">
+                <span className="text-sm font-medium text-[var(--text-primary)]">
                   {field.label}
                 </span>
-                <span className="text-xs text-[var(--text-muted)]">
+                <span className="text-xs text-[var(--text-secondary)]">
                   {config[activeMode][field.key]}
                 </span>
               </div>

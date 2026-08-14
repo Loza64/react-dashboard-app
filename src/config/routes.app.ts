@@ -4,18 +4,31 @@ import type { ComponentType } from 'react'
 import { roles, type RoleName } from '@/enum/role'
 import { RoutesEnum } from '@/enum/routes..app'
 
-export const routeGroups = {
+export const routeGroups: Record<
+  'public' | 'dashboard',
+  {
+    shell: 'public' | 'dashboard'
+    authRequired: boolean
+    defaultRoles: RoleName[]
+    description: string
+  }
+> = {
   public: {
-    auth: false,
-    roles: [] as RoleName[],
+    shell: 'public',
+    authRequired: false,
+    defaultRoles: [],
+    description: 'Rutas abiertas para visitantes o contenido público',
   },
   dashboard: {
-    auth: true,
-    roles: [roles.all] as RoleName[],
+    shell: 'dashboard',
+    authRequired: true,
+    defaultRoles: [roles.all],
+    description: 'Rutas protegidas con layout de dashboard',
   },
-} as const
+}
 
 export type RouteGroup = keyof typeof routeGroups
+export type RouteShell = (typeof routeGroups)[RouteGroup]['shell']
 
 export type RouteMenuMeta = {
   icon: ComponentType<LucideProps>
@@ -23,7 +36,7 @@ export type RouteMenuMeta = {
   order: number
 }
 
-type RouteOverrides = {
+type RouteDefinition = {
   group: RouteGroup
   roles?: RoleName[]
   permission?: string[]
@@ -35,6 +48,7 @@ type RouteOverrides = {
 
 export type RouteConfig = {
   group: RouteGroup
+  shell: RouteShell
   auth: boolean
   roles: RoleName[]
   permission: string[]
@@ -44,7 +58,7 @@ export type RouteConfig = {
   guestOnly: boolean
 }
 
-const routeDefinitions: Record<RoutesEnum, RouteOverrides> = {
+const routeDefinitions: Record<RoutesEnum, RouteDefinition> = {
   [RoutesEnum.ROOT]: {
     group: 'public',
     title: 'Inicio',
@@ -83,38 +97,44 @@ const routeDefinitions: Record<RoutesEnum, RouteOverrides> = {
     search: false,
     menu: { icon: Palette, label: 'Tema', order: 4 },
   },
-  // Ejemplo pedido: una sección nueva "public/products", sin auth, sin
-  // roles y sin tocar OutletContainer/AppOutlet/permission.app.ts.
   [RoutesEnum.PUBLIC_PRODUCTS]: {
     group: 'public',
     title: 'Productos',
   },
 }
 
-function buildRoutesConfig(
-  definitions: Record<RoutesEnum, RouteOverrides>
-): Record<RoutesEnum, RouteConfig> {
-  const entries = Object.entries(definitions) as [RoutesEnum, RouteOverrides][]
+const buildRouteConfig = (
+  _path: RoutesEnum,
+  definition: RouteDefinition
+): RouteConfig => {
+  const groupConfig = routeGroups[definition.group]
 
-  return entries.reduce(
-    (config, [path, override]) => {
-      const groupDefaults = routeGroups[override.group]
-
-      config[path] = {
-        group: override.group,
-        auth: groupDefaults.auth,
-        roles: override.roles ?? groupDefaults.roles,
-        permission: override.permission ?? ['*'],
-        title: override.title,
-        search: override.search ?? false,
-        menu: override.menu,
-        guestOnly: override.guestOnly ?? false,
-      }
-
-      return config
-    },
-    {} as Record<RoutesEnum, RouteConfig>
-  )
+  return {
+    group: definition.group,
+    shell: groupConfig.shell,
+    auth: groupConfig.authRequired,
+    roles: definition.roles
+      ? [...definition.roles]
+      : [...groupConfig.defaultRoles],
+    permission: definition.permission ? [...definition.permission] : ['*'],
+    title: definition.title,
+    search: definition.search ?? false,
+    menu: definition.menu,
+    guestOnly: definition.guestOnly ?? false,
+  }
 }
 
-export const routesConfig = buildRoutesConfig(routeDefinitions)
+export const routesConfig = (
+  Object.keys(routeDefinitions) as RoutesEnum[]
+).reduce(
+  (config, path) => {
+    config[path] = buildRouteConfig(path, routeDefinitions[path])
+    return config
+  },
+  {} as Record<RoutesEnum, RouteConfig>
+)
+
+export const getRouteShell = (route?: RouteConfig): RouteShell | undefined =>
+  route?.shell
+
+export const isProtectedRoute = (route?: RouteConfig) => !!route && route.auth
