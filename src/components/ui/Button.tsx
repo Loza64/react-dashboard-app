@@ -2,11 +2,7 @@ import { type ButtonHTMLAttributes, type ReactNode, forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
 export type ButtonVariant =
-  | 'primary'
-  | 'ghost'
-  | 'icon'
-  | 'icon-danger'
-  | 'icon-success'
+  'primary' | 'ghost' | 'icon' | 'icon-danger' | 'icon-success'
 
 export interface ButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
