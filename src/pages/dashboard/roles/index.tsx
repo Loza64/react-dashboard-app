@@ -1,5 +1,1 @@
-import RolesView from '@/views/dashboard/roles/RolesView'
-
-export default function RolesPage() {
-  return <RolesView />
-}
+export { default } from '@/features/roles/RolesList'

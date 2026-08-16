@@ -1,8 +1,12 @@
-import type { UploadFile } from 'antd'
-import type { RcFile } from 'antd/es/upload'
+/** Reemplaza el `UploadFile`/`RcFile` de antd por un tipo mínimo propio, sin dependencias de UI. */
+export interface UploadFileLike {
+  uid: string
+  name: string
+  status?: 'uploading' | 'done' | 'error' | 'removed'
+}
 
-export default interface AvatarUpload extends UploadFile {
+export default interface AvatarUpload extends UploadFileLike {
   id?: number
-  originFileObj?: RcFile
+  originFileObj?: File
   url?: string
 }

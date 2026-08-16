@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback } from 'react'
-import { message } from 'antd'
+import { toast } from 'react-toastify'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -9,7 +9,7 @@ import { queryKeys } from '@/config/queryClient'
 import { userService } from '@/api'
 import SessionResponse from '@/sdk/model/response/SessionResponse'
 import User from '@/models/entities/User'
-import SessionType from '@/models/app/context/SessionType'
+import SessionType, { SignUpPayload } from '@/models/app/context/SessionType'
 import errorResponse from '@/utils/errorResponse'
 import { RoutesEnum } from '@/enum/routes..app'
 
@@ -17,7 +17,6 @@ const service = userService
 const settings = sdkSettings
 
 export default function SessionProvider({ children }: { children: ReactNode }) {
-  const [messageApi, contextHolder] = message.useMessage()
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
@@ -37,7 +36,8 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
   })
 
   const signupMutation = useMutation({
-    mutationFn: (payload: User) => service.signUp({ payload }),
+    mutationFn: (payload: SignUpPayload) =>
+      service.signUp({ payload: payload as unknown as User }),
   })
 
   const saveSession = useCallback(
@@ -59,7 +59,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
       }
       settings.removeToken()
       queryClient.setQueryData(queryKeys.session, null)
-      messageApi.info('Sesión cerrada correctamente.')
+      toast.info('Sesión cerrada correctamente.')
 
       if (location.pathname !== RoutesEnum.LOGIN) {
         navigate(RoutesEnum.LOGIN, { replace: true })
@@ -67,7 +67,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       errorResponse({ error })
     }
-  }, [messageApi, navigate, location.pathname, queryClient])
+  }, [navigate, location.pathname, queryClient])
 
   const value: SessionType = {
     profile,
@@ -84,16 +84,13 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
 
   if (profileLoading && token) {
     return (
-      <div className="flex h-screen items-center justify-center text-lg text-gray-600">
+      <div className="flex min-h-dvh items-center justify-center text-sm text-[var(--text-muted)]">
         Cargando sesión...
       </div>
     )
   }
 
   return (
-    <SessionContext.Provider value={value}>
-      {children}
-      {contextHolder}
-    </SessionContext.Provider>
+    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
   )
 }

@@ -1,5 +1,6 @@
-import DashboardView from '@/views/dashboard/DashboardView'
+import { Navigate } from 'react-router-dom'
+import { RoutesEnum } from '@/enum/routes..app'
 
-export default function DashBoard() {
-  return <DashboardView />
+export default function DashboardIndex() {
+  return <Navigate to={RoutesEnum.USERS} replace />
 }

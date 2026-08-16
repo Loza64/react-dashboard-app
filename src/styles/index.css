@@ -1,128 +1,318 @@
-@import 'antd/dist/reset.css';
-@import 'tailwindcss';
-@import './components/and-components';
-@import './components/scroll.css';
-@import './components/animations.css';
+@import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+/*
+ * Variables de tema.
+ *
+ * Solo los colores "base" (bg, surface, text, primary, danger, success,
+ * warning, sidebar-bg, y los 2 de contraste automático) tienen un valor
+ * fijo aquí. Todo lo demás (hover, versiones "soft", bordes, texto
+ * apagado, etc.) se calcula con color-mix() a partir de esos colores base,
+ * así que si `useThemeColors` sobreescribe los base (inline, en <html> o en
+ * cualquier contenedor con [data-theme]), el resto del tema se recalcula
+ * solo, sin tocar JavaScript.
+ *
+ * `[data-theme]` (sin valor) trae los valores por defecto en modo claro;
+ * `[data-theme='dark']` los sobreescribe para modo oscuro.
+ */
+:root,
+[data-theme] {
+  /* --- Colores base (personalizables) --- */
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --text: #1a1d24;
+  --primary: #4338ca;
+  --danger: #dc2626;
+  --success: #16794f;
+  --warning: #b45309;
+  --sidebar-bg: #14161f;
 
-:root {
-  --primary: #1d4ed8;
-  --primary-hover: #1e3a8a;
-  --secondary: #64748b;
+  /* Texto de contraste automático (blanco o casi-negro) sobre --sidebar-bg
+     y --primary; los calcula useThemeColors en JS con color.ts, porque
+     decidir blanco-vs-negro no se puede resolver con color-mix(). */
+  --sidebar-text-active: #ffffff;
+  --primary-contrast: #ffffff;
 
-  --bg-base: #f4f7fb;
-  --bg-elevated: #ffffff;
-  --bg-contrast: #edf2f7;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --select-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
-  --border: #dfe7f1;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
-  --info: #1d4ed8;
-  --shadow-soft: rgba(15, 23, 42, 0.08);
+  /* --- Derivados: calculados con color-mix(), no hay que tocarlos --- */
+  --border: color-mix(in srgb, var(--text) 10%, var(--surface));
+  --text-muted: color-mix(in srgb, var(--text) 55%, var(--surface));
+  --surface-muted: color-mix(in srgb, var(--surface) 50%, var(--bg));
+
+  --primary-hover: color-mix(in srgb, var(--primary) 90%, black);
+  --primary-soft: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  --primary-color: var(--primary);
+
+  --danger-soft: color-mix(in srgb, var(--danger) 8%, var(--surface));
+  --success-soft: color-mix(in srgb, var(--success) 8%, var(--surface));
+  --warning-soft: color-mix(in srgb, var(--warning) 8%, var(--surface));
+
+  --sidebar-text: color-mix(in srgb, var(--sidebar-text-active) 65%, var(--sidebar-bg));
+
+  --select-bg: var(--surface);
+  --select-border: var(--border);
+  --select-option-text: var(--text);
+  --select-option-hover-bg: var(--surface-muted);
+  --select-option-hover-text: var(--text);
 }
 
-.dark {
-  --primary: #8aa8ff;
-  --primary-hover: #bfd1ff;
-  --secondary: #a5b4cf;
-
-  --bg-base: #0b1220;
-  --bg-elevated: #101c2f;
-  --bg-contrast: #0d1728;
-
-  --text-primary: #e2e8f0;
-  --text-secondary: #a5b4cf;
-
-  --border: #23314a;
-  --success: #34d399;
+[data-theme='dark'] {
+  /* --- Colores base por defecto en modo oscuro --- */
+  --bg: #0f1117;
+  --surface: #171a23;
+  --text: #e8e9ed;
+  --primary: #6366f1;
+  --danger: #f87171;
+  --success: #4ade80;
   --warning: #fbbf24;
-  --error: #f87171;
-  --info: #8aa8ff;
-  --shadow-soft: rgba(2, 6, 23, 0.42);
-}
+  --sidebar-bg: #0b0c11;
 
-html,
-body {
-  background-color: var(--bg-contrast);
-  color: var(--text-primary);
-  transition:
-    background-color 0.2s ease-in-out,
-    color 0.2s ease-in-out;
-}
+  /* --- Derivados que necesitan un peso distinto sobre fondos oscuros --- */
+  --border: color-mix(in srgb, var(--text) 14%, var(--surface));
 
-.bg-app {
-  background-color: var(--bg-base);
-}
+  /* En modo oscuro conviene aclarar el primario al hacer hover en vez de
+     oscurecerlo, para que no se pierda contra el fondo. */
+  --primary-hover: color-mix(in srgb, var(--primary) 88%, white);
 
-.bg-layout {
-  background-color: var(--bg-contrast);
-}
-
-.bg-surface {
-  background-color: var(--bg-elevated);
-}
-
-.bg-panel {
-  background-color: var(--bg-elevated);
-}
-
-.bg-muted {
-  background-color: var(--bg-contrast);
-}
-
-.border-default {
-  border-color: var(--border);
-}
-
-.text-muted {
-  color: var(--text-secondary);
-}
-
-.text-soft {
-  color: var(--text-secondary);
+  /* Los tonos "soft" necesitan más peso del color base para notarse sobre
+     una superficie ya oscura. */
+  --primary-soft: color-mix(in srgb, var(--primary) 24%, var(--surface));
+  --danger-soft: color-mix(in srgb, var(--danger) 22%, var(--surface));
+  --success-soft: color-mix(in srgb, var(--success) 22%, var(--surface));
+  --warning-soft: color-mix(in srgb, var(--warning) 22%, var(--surface));
 }
 
 * {
-  font-family: system-ui;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  -ms-overflow-style: auto;
+  transition: scrollbar-color 0.1s ease-in-out;
 }
 
-.border-primary {
+*::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 10px;
+  transition: background-color 0.1s ease-in-out, width 0.1s ease-in-out, height 0.1s ease-in-out;
+}
+
+*:hover {
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+*:hover::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* --- Utilidades compartidas (equivalente a core/shared/styles/utilities.css) --- */
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.form-error {
+  font-size: 12px;
+  color: var(--danger);
+}
+
+.field-input {
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field-input:focus {
+  outline: none;
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
-.text-primary {
-  color: var(--text-primary);
+.field-input:disabled {
+  background: var(--surface-muted);
+  color: var(--text-muted);
 }
 
-.text-secondary {
-  color: var(--text-secondary);
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.bg-primary {
-  background-color: var(--primary);
+.form-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.dashboard-nav-item:hover {
-  background-color: color-mix(in srgb, var(--primary) 12%, transparent);
+.form-loading-state {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
-.dashboard-nav-item.is-active:hover {
-  background-color: var(--primary-hover);
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
 }
 
-.bg-primary-hover {
-  background-color: var(--primary-hover);
+/* --- Páginas de auth (login / signup) --- */
+
+.auth-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 24px;
 }
 
-.bg-secondary {
-  background-color: var(--secondary);
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  box-shadow: 0 10px 30px rgba(20, 22, 31, 0.06);
 }
 
-.ant-select {
-  width: 100% !important;
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.auth-brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: var(--primary-contrast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.auth-brand-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.auth-title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.auth-subtitle {
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.auth-footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.auth-footer a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.auth-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 420px) {
+  .auth-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- react-select ("SelectApi"), piel custom equivalente a la de ng-select --- */
+
+.select-api-error {
+  display: block;
+  margin-top: 4px;
+  color: var(--danger);
+  font-size: 12px;
 }

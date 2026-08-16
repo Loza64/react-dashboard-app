@@ -1,9 +1,8 @@
-import type { RcFile } from 'antd/es/upload'
-import type { UploadFile } from 'antd/lib'
+import type { UploadFileLike } from './AvatarUpload'
 
-export default interface UploadMedia extends UploadFile {
+export default interface UploadMedia extends UploadFileLike {
   id?: number
-  originFileObj?: RcFile
+  originFileObj?: File
   url?: string
   deleted?: boolean
 }
