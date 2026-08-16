@@ -55,7 +55,9 @@ export function RoleForm({ roleId, onSaved, onCancelled }: RoleFormProps) {
     const payload: Partial<Role> = {
       name: values.name,
       active: values.active,
-      permissions: values.permissions,
+      permissions: values.permissions.map(({ id }) => ({
+        id,
+      })) as Permissions[],
     }
 
     try {

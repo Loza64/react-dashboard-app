@@ -21,14 +21,10 @@ export default function SettingsPage() {
     resetAll,
   } = useTheme()
 
-  // Pestaña que se está editando (claro/oscuro); no tiene que coincidir con el tema activo.
   const [activeTab, setActiveTab] = useState<Theme>(activeTheme)
 
   const currentPalette = palette(activeTab)
 
-  // Solo las ~10 variables "base" (el resto del tema lo resuelve CSS con
-  // color-mix() en cuanto el div de vista previa lleva el atributo
-  // [data-theme] correspondiente).
   const previewStyles = useMemo(
     () => buildThemeBaseVars(currentPalette),
     [currentPalette]

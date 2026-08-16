@@ -58,16 +58,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [lightColors, setLightColors] = useState<ThemeBaseColors>(initial.light)
   const [darkColors, setDarkColors] = useState<ThemeBaseColors>(initial.dark)
 
-  // Aplica el atributo data-theme y persiste el modo activo.
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem(THEME_STORAGE_KEY, theme)
   }, [theme])
 
-  // Aplica las variables CSS base del modo activo cada vez que cambian los
-  // colores o el usuario alterna entre claro/oscuro. El resto del tema
-  // (hover, "soft", bordes, etc.) lo resuelve CSS con color-mix() a partir
-  // de estas variables, ver styles/index.css.
   useEffect(() => {
     const base = theme === 'dark' ? darkColors : lightColors
     const vars = buildThemeBaseVars(base)

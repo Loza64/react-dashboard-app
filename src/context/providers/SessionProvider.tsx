@@ -84,7 +84,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
 
   if (profileLoading && token) {
     return (
-      <div className="flex min-h-dvh items-center justify-center text-sm text-[var(--text-muted)]">
+      <div className="flex min-h-dvh items-center justify-center text-sm text-(--text-muted)">
         Cargando sesión...
       </div>
     )

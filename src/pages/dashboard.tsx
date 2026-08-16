@@ -26,17 +26,20 @@ function DashboardLayout() {
   }
 
   return (
-    <div className="grid h-dvh grid-cols-[240px_1fr] max-[900px]:grid-cols-1">
-      <aside
-        className={cn(
-          'flex flex-col overflow-y-auto bg-[var(--sidebar-bg)] px-3 py-4 text-[var(--sidebar-text)]',
-          'max-[900px]:fixed max-[900px]:inset-y-0 max-[900px]:left-0 max-[900px]:z-[60] max-[900px]:w-[260px] max-[900px]:max-w-[75%]',
-          'max-[900px]:shadow-[4px_0_24px_rgba(0,0,0,0.2)] max-[900px]:transition-transform max-[900px]:duration-200',
-          sidebarOpen
-            ? 'max-[900px]:translate-x-0'
-            : 'max-[900px]:-translate-x-full'
-        )}
-      >
+    <div
+      className={cn(
+        'relative flex h-dvh w-full overflow-hidden bg-[var(--background)]',
+        sidebarOpen && 'sidebar-is-open'
+      )}
+    >
+      {/* 1. OVERLAY  */}
+      <div
+        className="sidebar-overlay fixed inset-0 z-40 bg-black/50 min-[901px]:hidden"
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      {/* 2. SIDEBAR */}
+      <aside className="app-sidebar flex flex-col bg-[var(--sidebar-bg)] px-3 py-4 text-[var(--sidebar-text)]">
         <div className="flex items-center gap-2.5 px-2 pt-2 pb-5">
           <span className="inline-flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--primary)] text-sm font-bold text-[var(--primary-contrast)]">
             A
@@ -46,7 +49,7 @@ function DashboardLayout() {
           </span>
         </div>
 
-        <nav className="flex flex-1 flex-col gap-0.5">
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
           {DASHBOARD_MENU.map((item) => {
             const active = location.pathname.startsWith(item.route)
             const ItemIcon = item.icon
@@ -70,7 +73,7 @@ function DashboardLayout() {
 
         <button
           type="button"
-          className="flex items-center gap-2.5 rounded-[var(--radius-sm)] border-none bg-transparent px-3 py-2.5 text-left text-sm font-medium text-[var(--sidebar-text)] hover:bg-white/[0.06] hover:text-[var(--sidebar-text-active)]"
+          className="mt-auto flex items-center gap-2.5 rounded-[var(--radius-sm)] border-none bg-transparent px-3 py-2.5 text-left text-sm font-medium text-[var(--sidebar-text)] hover:bg-white/[0.06] hover:text-[var(--sidebar-text-active)]"
           onClick={handleLogout}
         >
           <LogOut size={18} />
@@ -78,14 +81,8 @@ function DashboardLayout() {
         </button>
       </aside>
 
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-[rgba(15,18,25,0.45)] min-[901px]:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <div className="flex h-full min-w-0 flex-col">
+      {/* 3. CONTENIDO PRINCIPAL */}
+      <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex flex-shrink-0 items-center gap-3 border-b border-[var(--border)] bg-[var(--surface)] px-6 py-3.5">
           <button
             type="button"
@@ -110,7 +107,7 @@ function DashboardLayout() {
           )}
         </header>
 
-        <main className="max-h-[91.5dvh] w-full overflow-y-auto p-6 max-[900px]:max-h-none max-[900px]:p-4">
+        <main className="w-full flex-1 overflow-y-auto p-6 max-[900px]:p-4">
           <Outlet />
         </main>
       </div>

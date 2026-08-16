@@ -5,7 +5,6 @@ export interface ThemeContextValue {
   theme: Theme
   toggleTheme: () => void
   setTheme: (theme: Theme) => void
-
   lightColors: ThemeBaseColors
   darkColors: ThemeBaseColors
   palette: (mode: Theme) => ThemeBaseColors

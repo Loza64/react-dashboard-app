@@ -15,7 +15,6 @@ export const userFormSchema = z.object({
 })
 export type UserFormValues = z.infer<typeof userFormSchema>
 
-/** Solo se exige contraseña al crear un usuario nuevo; se valida aparte en el submit del formulario. */
 export function validatePasswordRequiredOnCreate(
   isEditing: boolean,
   password?: string
