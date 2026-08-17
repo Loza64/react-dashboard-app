@@ -1,4 +1,3 @@
-// AxiosConfig.ts
 import { sdkSettings } from '@/sdk/core/SdkSettings'
 import { queryClient, queryKeys } from '@/config/queryClient'
 import axios, { type AxiosInstance, type AxiosError } from 'axios'

@@ -1,3 +1,4 @@
+import { SignUpPayload } from '@/models/app/context/SessionType'
 import User from '@/models/entities/User'
 import { sdkSettings } from '@/sdk/core/SdkSettings'
 import Service from '@/sdk/core/Service'
@@ -31,7 +32,7 @@ export default class UserService extends Service<User> {
   public async signUp({
     payload,
   }: {
-    payload: User
+    payload: SignUpPayload
   }): Promise<SessionResponse> {
     const res = await this.axios.post<SessionResponse>('/auth/signup', payload)
     return res.data

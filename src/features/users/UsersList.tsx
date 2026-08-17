@@ -9,6 +9,7 @@ import { SearchBox } from '@/components/ui/SearchBox'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { Table, type TableColumn } from '@/components/ui/Table'
 import { UserForm } from './UserForm'
 
@@ -20,6 +21,7 @@ export default function UsersList() {
   const [showDeleted, setShowDeleted] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | number | null>(null)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
 
   const queryParams = useMemo(
     () => ({
@@ -64,8 +66,13 @@ export default function UsersList() {
   }
 
   const remove = (user: User) => {
-    if (!confirm(`¿Eliminar al usuario "${user.username}"?`)) return
-    crud.delete({ id: user.id! })
+    setUserToDelete(user)
+  }
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return
+    await crud.delete({ id: userToDelete.id! })
+    setUserToDelete(null)
   }
 
   const restore = (user: User) => {
@@ -181,6 +188,24 @@ export default function UsersList() {
           onCancelled={closeModal}
         />
       </Modal>
+
+      <ConfirmModal
+        open={!!userToDelete}
+        tone="danger"
+        title="Eliminar usuario"
+        description={
+          <>
+            ¿Seguro que quieres eliminar a{' '}
+            <strong>{userToDelete?.username}</strong>? Podrás restaurarlo más
+            adelante desde &quot;Mostrar eliminados&quot;.
+          </>
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        loading={crud.isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setUserToDelete(null)}
+      />
     </>
   )
 }

@@ -60,13 +60,6 @@ export const DEFAULT_DARK_COLORS: ThemeBaseColors = {
   warning: '#fbbf24',
 }
 
-/**
- * Variables CSS "base" que hay que fijar en el elemento (inline) para que
- * las fórmulas `color-mix()` de styles/index.css calculen el resto del
- * tema. Solo incluye lo que el usuario elige más los 2 colores de texto de
- * contraste automático (no se pueden resolver con `color-mix()` puro,
- * porque dependen de la luminancia del color elegido).
- */
 export function buildThemeBaseVars(
   base: ThemeBaseColors
 ): Record<string, string> {
@@ -79,9 +72,6 @@ export function buildThemeBaseVars(
     '--success': base.success,
     '--warning': base.warning,
     '--sidebar-bg': base.sidebarBg,
-
-    // Contraste automático: decide texto blanco o casi-negro según el
-    // color de fondo elegido, para que cualquier color siga siendo legible.
     '--sidebar-text-active': contrastText(base.sidebarBg),
     '--primary-contrast': contrastText(base.primary),
   }

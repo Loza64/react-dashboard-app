@@ -36,8 +36,7 @@ export default function SessionProvider({ children }: { children: ReactNode }) {
   })
 
   const signupMutation = useMutation({
-    mutationFn: (payload: SignUpPayload) =>
-      service.signUp({ payload: payload as unknown as User }),
+    mutationFn: (payload: SignUpPayload) => service.signUp({ payload }),
   })
 
   const saveSession = useCallback(

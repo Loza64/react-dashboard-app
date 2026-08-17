@@ -2,7 +2,7 @@ import { type ButtonHTMLAttributes, type ReactNode, forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
 export type ButtonVariant =
-  'primary' | 'ghost' | 'icon' | 'icon-danger' | 'icon-success'
+  'primary' | 'danger' | 'ghost' | 'icon' | 'icon-danger' | 'icon-success'
 
 export interface ButtonProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -21,6 +21,8 @@ const base =
 const variantClass: Record<ButtonVariant, string> = {
   primary:
     'px-3.5 py-2.5 bg-[var(--primary)] text-[var(--primary-contrast)] hover:enabled:bg-[var(--primary-hover)]',
+  danger:
+    'px-3.5 py-2.5 bg-[var(--danger)] text-white hover:enabled:bg-[color-mix(in_srgb,var(--danger)_90%,black)]',
   ghost:
     'px-3.5 py-2.5 bg-transparent border-[var(--border)] text-[var(--text)] hover:enabled:bg-[var(--surface-muted)]',
   icon: 'w-[30px] h-[30px] p-0 justify-center border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:enabled:text-[var(--text)] hover:enabled:bg-[var(--surface-muted)]',

@@ -72,7 +72,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [theme, lightColors, darkColors])
 
-  // Persiste ambas paletas en localStorage ante cualquier cambio.
   useEffect(() => {
     const payload: StoredPalettes = { light: lightColors, dark: darkColors }
     localStorage.setItem(COLORS_STORAGE_KEY, JSON.stringify(payload))

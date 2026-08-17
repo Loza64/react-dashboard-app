@@ -1,11 +1,26 @@
 import { useMemo, useState } from 'react'
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { LogOut, Menu } from 'lucide-react'
 import { RequireAuth } from '@/components/guards/RequireAuth'
+import { SidebarMenu } from '@/components/ui/SidebarMenu'
 import { useSession } from '@/hooks/useSession'
-import { DASHBOARD_MENU } from '@/config/dashboardMenu'
+import { DASHBOARD_MENU, type MenuItem } from '@/config/dashboardMenu'
 import { RoutesEnum } from '@/enum/routes..app'
 import { cn } from '@/lib/utils'
+
+function findActiveLabel(
+  items: MenuItem[],
+  currentPath: string
+): string | undefined {
+  for (const item of items) {
+    if (item.route && currentPath.startsWith(item.route)) return item.label
+    if (item.children) {
+      const childLabel = findActiveLabel(item.children, currentPath)
+      if (childLabel) return childLabel
+    }
+  }
+  return undefined
+}
 
 function DashboardLayout() {
   const { profile, logout } = useSession()
@@ -13,12 +28,10 @@ function DashboardLayout() {
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const pageTitle = useMemo(() => {
-    const active = DASHBOARD_MENU.find((item) =>
-      location.pathname.includes(item.route)
-    )
-    return active?.label ?? 'Dashboard'
-  }, [location.pathname])
+  const pageTitle = useMemo(
+    () => findActiveLabel(DASHBOARD_MENU, location.pathname) ?? 'Dashboard',
+    [location.pathname]
+  )
 
   const handleLogout = async () => {
     await logout()
@@ -50,25 +63,11 @@ function DashboardLayout() {
         </div>
 
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-          {DASHBOARD_MENU.map((item) => {
-            const active = location.pathname.startsWith(item.route)
-            const ItemIcon = item.icon
-            return (
-              <Link
-                key={item.route}
-                to={item.route}
-                onClick={() => setSidebarOpen(false)}
-                className={cn(
-                  'flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-sm font-medium text-[var(--sidebar-text)] no-underline transition-colors hover:bg-white/[0.06] hover:text-[var(--sidebar-text-active)]',
-                  active &&
-                    'bg-[var(--primary)] text-[var(--sidebar-text-active)] hover:bg-[var(--primary)]'
-                )}
-              >
-                <ItemIcon size={18} />
-                <span>{item.label}</span>
-              </Link>
-            )
-          })}
+          <SidebarMenu
+            items={DASHBOARD_MENU}
+            currentPath={location.pathname}
+            onNavigate={() => setSidebarOpen(false)}
+          />
         </nav>
 
         <button

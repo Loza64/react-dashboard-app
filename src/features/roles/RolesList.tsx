@@ -9,6 +9,7 @@ import { SearchBox } from '@/components/ui/SearchBox'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { Table, type TableColumn } from '@/components/ui/Table'
 import { RoleForm } from './RoleForm'
 
@@ -20,6 +21,7 @@ export default function RolesList() {
   const [showDeleted, setShowDeleted] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | number | null>(null)
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null)
 
   const queryParams = useMemo(
     () => ({
@@ -64,8 +66,13 @@ export default function RolesList() {
   }
 
   const remove = (role: Role) => {
-    if (!confirm(`¿Eliminar el rol "${role.name}"?`)) return
-    crud.delete({ id: role.id! })
+    setRoleToDelete(role)
+  }
+
+  const confirmDelete = async () => {
+    if (!roleToDelete) return
+    await crud.delete({ id: roleToDelete.id! })
+    setRoleToDelete(null)
   }
 
   const restore = (role: Role) => {
@@ -174,6 +181,23 @@ export default function RolesList() {
           onCancelled={closeModal}
         />
       </Modal>
+
+      <ConfirmModal
+        open={!!roleToDelete}
+        tone="danger"
+        title="Eliminar rol"
+        description={
+          <>
+            ¿Seguro que quieres eliminar el rol{' '}
+            <strong>{roleToDelete?.name}</strong>?
+          </>
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        loading={crud.isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setRoleToDelete(null)}
+      />
     </>
   )
 }

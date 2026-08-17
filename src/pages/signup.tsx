@@ -13,21 +13,27 @@ import errorResponse from '@/utils/errorResponse'
 function SignupPage() {
   const { signup, saveSession } = useSession()
   const [error, setError] = useState<string | null>(null)
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<SignupFormValues>({ resolver: zodResolver(signupSchema) })
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    mode: 'onBlur',
+  })
 
   const onSubmit = async (values: SignupFormValues) => {
     setError(null)
     try {
-      const payload = values
-      const session = await signup(payload)
+      const session = await signup(values)
       saveSession(session)
-    } catch (err) {
+    } catch (err: unknown) {
+      const res = errorResponse({ error: err, alert: false }) as {
+        message?: string
+      }
       setError(
-        errorResponse({ error: err, alert: false }).message ||
+        res?.message ||
           'No se pudo crear la cuenta. Revisa los datos e intenta de nuevo.'
       )
     }
@@ -43,6 +49,13 @@ function SignupPage() {
 
         <h1 className="auth-title">Crea tu cuenta</h1>
         <p className="auth-subtitle">Completa tus datos para registrarte</p>
+
+        {/* Mensaje de error general de la API / Servidor */}
+        {error && (
+          <div className="form-error-global mb-4 text-sm text-red-500">
+            {error}
+          </div>
+        )}
 
         <form
           className="form-grid"
@@ -135,8 +148,6 @@ function SignupPage() {
               {...register('confirmPassword')}
             />
           </FormField>
-
-          {error && <span className="form-error">{error}</span>}
 
           <Button
             type="submit"

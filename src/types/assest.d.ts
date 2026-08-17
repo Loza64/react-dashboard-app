@@ -1,4 +1,3 @@
-// Esto le dice a TypeScript que cualquier archivo .png, .jpg, .jpeg, .gif o .svg puede ser importado como string
 declare module '*.png' {
   const value: string
   export default value

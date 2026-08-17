@@ -81,7 +81,7 @@ export function UserForm({ userId, onSaved, onCancelled }: UserFormProps) {
       surname: values.surname,
       email: values.email,
       blocked: values.blocked,
-      role: values.role ?? undefined,
+      role: values.role ? ({ id: values.role.id } as Role) : undefined,
     }
     if (!isEditing && values.password) payload.password = values.password
 

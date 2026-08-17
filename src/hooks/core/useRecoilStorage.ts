@@ -58,7 +58,6 @@ export const localStorageEffectWithZod = <T>(
   }
 }
 
-// Esquema genérico que acepta cualquier valor
 const anyValueSchema = z.unknown()
 
 export const dynamicRecoilFamily = atomFamily<unknown | undefined, string>({

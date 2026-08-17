@@ -1,19 +1,5 @@
 @import "tailwindcss";
 
-/*
- * Variables de tema.
- *
- * Solo los colores "base" (bg, surface, text, primary, danger, success,
- * warning, sidebar-bg, y los 2 de contraste automático) tienen un valor
- * fijo aquí. Todo lo demás (hover, versiones "soft", bordes, texto
- * apagado, etc.) se calcula con color-mix() a partir de esos colores base,
- * así que si `useThemeColors` sobreescribe los base (inline, en <html> o en
- * cualquier contenedor con [data-theme]), el resto del tema se recalcula
- * solo, sin tocar JavaScript.
- *
- * `[data-theme]` (sin valor) trae los valores por defecto en modo claro;
- * `[data-theme='dark']` los sobreescribe para modo oscuro.
- */
 :root,
 [data-theme] {
   /* --- Colores base (personalizables) --- */
@@ -26,9 +12,6 @@
   --warning: #b45309;
   --sidebar-bg: #14161f;
 
-  /* Texto de contraste automático (blanco o casi-negro) sobre --sidebar-bg
-     y --primary; los calcula useThemeColors en JS con color.ts, porque
-     decidir blanco-vs-negro no se puede resolver con color-mix(). */
   --sidebar-text-active: #ffffff;
   --primary-contrast: #ffffff;
 
@@ -74,13 +57,7 @@
 
   /* --- Derivados que necesitan un peso distinto sobre fondos oscuros --- */
   --border: color-mix(in srgb, var(--text) 14%, var(--surface));
-
-  /* En modo oscuro conviene aclarar el primario al hacer hover en vez de
-     oscurecerlo, para que no se pierda contra el fondo. */
   --primary-hover: color-mix(in srgb, var(--primary) 88%, white);
-
-  /* Los tonos "soft" necesitan más peso del color base para notarse sobre
-     una superficie ya oscura. */
   --primary-soft: color-mix(in srgb, var(--primary) 24%, var(--surface));
   --danger-soft: color-mix(in srgb, var(--danger) 22%, var(--surface));
   --success-soft: color-mix(in srgb, var(--success) 22%, var(--surface));
@@ -135,6 +112,33 @@ body {
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* --- Animaciones de modales --- */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes rise-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.98); }
+}
+
+@keyframes icon-pop-in {
+  0% { opacity: 0; transform: scale(0.5); }
+  60% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 /* --- Utilidades compartidas (equivalente a core/shared/styles/utilities.css) --- */
