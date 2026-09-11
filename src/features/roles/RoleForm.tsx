@@ -17,13 +17,13 @@ export interface RoleFormProps {
 }
 
 const renderPermission = (item: Permissions): string =>
-  item.title ?? `${item.method.toUpperCase()} ${item.path}`
+  item.title ?? `${item.name}`
 
 export function RoleForm({ roleId, onSaved, onCancelled }: RoleFormProps) {
   const crud = useCrud<Role>({ service: roleService, queryKey: 'roles' })
   const [formError, setFormError] = useState<string | null>(null)
   const saving = crud.isCreating || crud.isUpdating
-  const isEditing = roleId != null
+  const isEditing = roleId !== null && roleId !== undefined
 
   const { data: editRole, isLoading: loadingEdit } = crud.useFindById({
     id: roleId ?? '',
@@ -61,8 +61,11 @@ export function RoleForm({ roleId, onSaved, onCancelled }: RoleFormProps) {
     }
 
     try {
-      if (isEditing) await crud.update({ id: roleId, payload })
-      else await crud.create({ payload: payload as Role })
+      if (isEditing) {
+        await crud.update({ id: roleId, payload })
+      } else {
+        await crud.create({ payload: payload as Role })
+      }
       onSaved()
     } catch {
       setFormError(
@@ -101,7 +104,7 @@ export function RoleForm({ roleId, onSaved, onCancelled }: RoleFormProps) {
               querySearch={(search) => ({ search })}
               queryParams={{ pageSize: 200 }}
               renderOption={renderPermission}
-              value={field.value as Permissions[]}
+              value={field.value}
               onChange={(value) =>
                 field.onChange(
                   Array.isArray(value) ? value : value ? [value] : []

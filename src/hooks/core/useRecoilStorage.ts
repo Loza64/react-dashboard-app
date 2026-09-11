@@ -9,7 +9,9 @@ export const localStorageEffectWithZod = <T>(
   schema: ZodType<T>
 ): AtomEffect<T | undefined> => {
   return ({ setSelf, onSet }) => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {
+      return
+    }
 
     const SECRET_KEY = sdkSettings.secretKey
     const savedValue = localStorage.getItem(storageKey)

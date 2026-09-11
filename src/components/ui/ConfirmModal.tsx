@@ -65,7 +65,9 @@ export function ConfirmModal({
       })
       return
     }
-    if (!mounted) return
+    if (!mounted) {
+      return
+    }
     queueMicrotask(() => {
       setClosing(true)
     })
@@ -77,12 +79,16 @@ export function ConfirmModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  if (!mounted) return null
+  if (!mounted) {
+    return null
+  }
 
   const { iconWrap, confirmVariant } = toneStyles[tone]
 
   const handleCancel = () => {
-    if (loading) return
+    if (loading) {
+      return
+    }
     onCancel()
   }
 

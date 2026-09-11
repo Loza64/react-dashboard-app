@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import AsyncSelect from 'react-select/async'
-import type { GroupBase, OptionProps, OptionsOrGroups } from 'react-select'
-import { components } from 'react-select'
+import {
+  components,
+  type GroupBase,
+  type OptionProps,
+  type OptionsOrGroups,
+} from 'react-select'
 import { Check } from 'lucide-react'
 import type { AbstractService } from '@/sdk/model/core/AbstractService'
 import type BaseEntity from '@/sdk/model/entities/BaseEntity'
@@ -64,7 +68,9 @@ export function SelectApi<T extends BaseEntity>({
       inputValue: string,
       callback: (options: OptionsOrGroups<T, GroupBase<T>>) => void
     ) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current)
+      }
       debounceRef.current = setTimeout(() => {
         service
           .findAll({
@@ -89,7 +95,9 @@ export function SelectApi<T extends BaseEntity>({
   )
 
   const selectValue = useMemo(() => {
-    if (Array.isArray(value)) return value
+    if (Array.isArray(value)) {
+      return value
+    }
     return value ?? null
   }, [value])
 

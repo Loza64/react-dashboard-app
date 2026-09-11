@@ -25,7 +25,9 @@ export function isValidHex(value: string): boolean {
 
 export function normalizeHex(value: string, fallback: string): string {
   const trimmed = value.trim()
-  if (!isValidHex(trimmed)) return fallback
+  if (!isValidHex(trimmed)) {
+    return fallback
+  }
 
   let digits = trimmed.replace('#', '').toLowerCase()
   if (digits.length === 3) {

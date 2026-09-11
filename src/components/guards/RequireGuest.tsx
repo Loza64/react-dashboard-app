@@ -4,6 +4,8 @@ import { sdkSettings } from '@/sdk/core/SdkSettings'
 import { RoutesEnum } from '@/enum/routes..app'
 
 export function RequireGuest({ children }: { children: ReactNode }) {
-  if (sdkSettings.token) return <Navigate to={RoutesEnum.DASHBOARD} replace />
+  if (sdkSettings.token) {
+    return <Navigate to={RoutesEnum.DASHBOARD} replace />
+  }
   return <>{children}</>
 }

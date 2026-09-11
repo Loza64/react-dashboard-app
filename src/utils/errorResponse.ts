@@ -36,7 +36,9 @@ export default function errorResponse({
     message = error.message ?? message
   }
 
-  if (alert) toast.error(message)
+  if (alert) {
+    toast.error(message)
+  }
 
   return { status, message }
 }

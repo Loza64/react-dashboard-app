@@ -13,7 +13,9 @@ export interface SidebarMenuProps {
 }
 
 export function menuItemIsActive(item: MenuItem, currentPath: string): boolean {
-  if (item.route && currentPath.startsWith(item.route)) return true
+  if (item.route && currentPath.startsWith(item.route)) {
+    return true
+  }
   return (
     item.children?.some((child) => menuItemIsActive(child, currentPath)) ??
     false

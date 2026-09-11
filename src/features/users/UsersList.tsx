@@ -70,7 +70,9 @@ export default function UsersList() {
   }
 
   const confirmDelete = async () => {
-    if (!userToDelete) return
+    if (!userToDelete) {
+      return
+    }
     await crud.delete({ id: userToDelete.id! })
     setUserToDelete(null)
   }

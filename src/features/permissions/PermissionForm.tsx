@@ -39,11 +39,15 @@ export function PermissionForm({
   })
 
   useEffect(() => {
-    if (permission) reset({ title: permission.title })
+    if (permission) {
+      reset({ title: permission.title })
+    }
   }, [permission, reset])
 
   const onSubmit = async (values: PermissionFormValues) => {
-    if (!permission) return
+    if (!permission) {
+      return
+    }
     setFormError(null)
     try {
       await crud.update({

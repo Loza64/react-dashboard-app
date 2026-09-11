@@ -52,17 +52,17 @@ export default function PermissionsList() {
 
   const columns: TableColumn<Permissions>[] = [
     {
+      title: 'Nombre',
+      key: 'name',
+      render: (_v, record) => <Badge variant="neutral">{record.name}</Badge>,
+    },
+    {
       title: 'Título',
       dataIndex: 'title',
       key: 'title',
-      render: (value) => (value == null ? 'N/A' : String(value)),
+      render: (value) =>
+        value === null || value === undefined ? 'N/A' : String(value),
     },
-    {
-      title: 'Método',
-      key: 'method',
-      render: (_v, record) => <Badge variant="neutral">{record.method}</Badge>,
-    },
-    { title: 'Ruta', dataIndex: 'path', key: 'path' },
     {
       title: '',
       key: 'actions',

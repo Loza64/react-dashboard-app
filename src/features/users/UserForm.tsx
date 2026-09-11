@@ -28,7 +28,7 @@ export function UserForm({ userId, onSaved, onCancelled }: UserFormProps) {
   const { data: editUser, isLoading: loadingEdit } = crud.useFindById({
     id: userId ?? '',
   })
-  const isEditing = userId != null
+  const isEditing = userId !== null && userId !== undefined
 
   const {
     register,
@@ -83,11 +83,16 @@ export function UserForm({ userId, onSaved, onCancelled }: UserFormProps) {
       blocked: values.blocked,
       role: values.role ? ({ id: values.role.id } as Role) : undefined,
     }
-    if (!isEditing && values.password) payload.password = values.password
+    if (!isEditing && values.password) {
+      payload.password = values.password
+    }
 
     try {
-      if (isEditing) await crud.update({ id: userId, payload })
-      else await crud.create({ payload: payload as User })
+      if (isEditing) {
+        await crud.update({ id: userId, payload })
+      } else {
+        await crud.create({ payload: payload as User })
+      }
       onSaved()
     } catch {
       setFormError(
@@ -171,7 +176,7 @@ export function UserForm({ userId, onSaved, onCancelled }: UserFormProps) {
             <SelectApi<Role>
               service={roleService}
               querySearch={(search) => ({ search })}
-              value={field.value as Role | null}
+              value={field.value}
               onChange={(value) =>
                 field.onChange(
                   Array.isArray(value) ? (value[0] ?? null) : value

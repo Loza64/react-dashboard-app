@@ -25,7 +25,9 @@ interface StoredPalettes {
 
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem(THEME_STORAGE_KEY)
-  if (stored === 'light' || stored === 'dark') return stored
+  if (stored === 'light' || stored === 'dark') {
+    return stored
+  }
   return window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light'
@@ -34,11 +36,12 @@ function getInitialTheme(): Theme {
 function loadStoredPalettes(): StoredPalettes {
   try {
     const raw = localStorage.getItem(COLORS_STORAGE_KEY)
-    if (!raw)
+    if (!raw) {
       return {
         light: { ...DEFAULT_LIGHT_COLORS },
         dark: { ...DEFAULT_DARK_COLORS },
       }
+    }
     const parsed = JSON.parse(raw) as Partial<StoredPalettes>
     return {
       light: { ...DEFAULT_LIGHT_COLORS, ...parsed.light },
@@ -98,8 +101,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   )
 
   const resetMode = useCallback((mode: Theme) => {
-    if (mode === 'dark') setDarkColors({ ...DEFAULT_DARK_COLORS })
-    else setLightColors({ ...DEFAULT_LIGHT_COLORS })
+    if (mode === 'dark') {
+      setDarkColors({ ...DEFAULT_DARK_COLORS })
+    } else {
+      setLightColors({ ...DEFAULT_LIGHT_COLORS })
+    }
   }, [])
 
   const resetAll = useCallback(() => {

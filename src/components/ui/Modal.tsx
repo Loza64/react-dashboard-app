@@ -16,7 +16,9 @@ export function Modal({
   onClose,
   children,
 }: ModalProps) {
-  if (!open) return null
+  if (!open) {
+    return null
+  }
 
   return (
     <div

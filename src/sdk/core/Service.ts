@@ -28,14 +28,18 @@ export default class Service<
     initPath = 'api',
     endpoint = '',
   }: ApiServiceParams) {
-    if (!origin) throw new Error('Origin is required for ApiService instance')
+    if (!origin) {
+      throw new Error('Origin is required for ApiService instance')
+    }
     this.endpoint = endpoint
     this.axios = AxiosConfig({ origin, initPath })
   }
 
   private getUrl(endpoint?: string, idOrPath?: string | number): string {
     const base = endpoint || this.endpoint
-    if (idOrPath == null) return base
+    if (idOrPath === null || idOrPath === undefined) {
+      return base
+    }
     const normalized = String(idOrPath).replace(/^\/+/, '')
     return `${base}/${normalized}`
   }

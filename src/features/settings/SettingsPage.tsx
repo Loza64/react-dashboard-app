@@ -5,7 +5,6 @@ import {
   THEME_COLOR_FIELDS,
   buildThemeBaseVars,
   type Theme,
-  type ThemeBaseColors,
 } from '@/models/app/theme'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -95,7 +94,7 @@ export default function SettingsPage() {
               key={field.key}
               label={field.label}
               hint={field.hint}
-              value={currentPalette[field.key as keyof ThemeBaseColors]}
+              value={currentPalette[field.key]}
               onValueChange={(value) => setColor(activeTab, field.key, value)}
             />
           ))}

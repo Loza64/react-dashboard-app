@@ -13,10 +13,14 @@ function findActiveLabel(
   currentPath: string
 ): string | undefined {
   for (const item of items) {
-    if (item.route && currentPath.startsWith(item.route)) return item.label
+    if (item.route && currentPath.startsWith(item.route)) {
+      return item.label
+    }
     if (item.children) {
       const childLabel = findActiveLabel(item.children, currentPath)
-      if (childLabel) return childLabel
+      if (childLabel) {
+        return childLabel
+      }
     }
   }
   return undefined

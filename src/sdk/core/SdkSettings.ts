@@ -14,7 +14,9 @@ export default class SdkSettings {
   get apiService(): string {
     try {
       const url = new URL(import.meta.env.VITE_API_SERVICE).origin
-      if (!url) throw new Error('VITE_API_SERVICE not defined in environment')
+      if (!url) {
+        throw new Error('VITE_API_SERVICE not defined in environment')
+      }
       return url
     } catch {
       throw new Error('Failed to get authService from environment')
@@ -65,7 +67,9 @@ export default class SdkSettings {
   get secretKey(): string {
     try {
       const key = import.meta.env.VITE_SECRET_KEY
-      if (!key) throw new Error('VITE_SECRET_KEY not defined in environment')
+      if (!key) {
+        throw new Error('VITE_SECRET_KEY not defined in environment')
+      }
       return key
     } catch {
       throw new Error('Failed to get secretKey from environment')

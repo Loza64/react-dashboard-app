@@ -100,7 +100,9 @@ export const useFindAll = <Entity extends BaseEntity>({
   const addItemInCache = useCallback(
     (item: Entity) => {
       updateCacheData((base) => {
-        if (base.data.some((i) => i.id === item.id)) return base
+        if (base.data.some((i) => i.id === item.id)) {
+          return base
+        }
         return { ...base, data: [item, ...base.data] }
       })
     },

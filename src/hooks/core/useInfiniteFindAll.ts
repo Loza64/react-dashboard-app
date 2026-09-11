@@ -91,7 +91,7 @@ const useInfiniteFindAll = <
             ...(pageParam !== null &&
             typeof pageParam === 'object' &&
             !Array.isArray(pageParam)
-              ? (pageParam as Record<string, unknown>)
+              ? pageParam
               : {}),
           },
           onUnauthorized,
@@ -128,12 +128,16 @@ const useInfiniteFindAll = <
   const addItemInCache = useCallback(
     (item: Entity) => {
       updateInfiniteCacheData((base) => {
-        if (base.pages.length === 0) return base
+        if (base.pages.length === 0) {
+          return base
+        }
 
         const alreadyExists = base.pages.some((page) =>
           page.data.some((i) => i.id === item.id)
         )
-        if (alreadyExists) return base
+        if (alreadyExists) {
+          return base
+        }
 
         return {
           ...base,

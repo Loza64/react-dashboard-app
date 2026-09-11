@@ -36,7 +36,9 @@ export default function useQueryParams<const T extends readonly string[]>(
 
   const setUrlParam = useCallback(
     (key: Keys, value: string, options?: { replace?: boolean }) => {
-      if (!isAllowed(key)) return
+      if (!isAllowed(key)) {
+        return
+      }
       const url = new URL(window.location.href)
       url.searchParams.set(key, value)
       if (options?.replace) {
@@ -51,7 +53,9 @@ export default function useQueryParams<const T extends readonly string[]>(
 
   const removeUrlParam = useCallback(
     (key: Keys, options?: { replace?: boolean }) => {
-      if (!isAllowed(key)) return
+      if (!isAllowed(key)) {
+        return
+      }
       const url = new URL(window.location.href)
       url.searchParams.delete(key)
       if (options?.replace) {
@@ -72,8 +76,12 @@ export default function useQueryParams<const T extends readonly string[]>(
       const url = new URL(window.location.href)
       ;(Object.entries(parameters) as [Keys, string | undefined][]).forEach(
         ([key, value]) => {
-          if (!isAllowed(key)) return
-          if (value === undefined) return
+          if (!isAllowed(key)) {
+            return
+          }
+          if (value === undefined) {
+            return
+          }
           url.searchParams.set(key, value)
         }
       )

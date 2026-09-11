@@ -5,22 +5,23 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "pnpm lint && vite build",
     "lint": "pnpm check-types && pnpm eslint && pnpm prettier:check",
     "lint:fix": "pnpm eslint:fix && pnpm prettier:fix",
-    "eslint": "eslint --cache --ext .ts,.tsx .",
+    "eslint": "eslint --cache --max-warnings=0 --ext .ts,.tsx .",
     "eslint:fix": "pnpm eslint --fix",
-    "eslint:check": "cross-env eslint --cache --ext .ts,.tsx .",
+    "eslint:check": "cross-env eslint --cache --max-warnings=0 --ext .ts,.tsx .",
     "prettier:check": "prettier --check \"**/*.ts\" \"**/*.tsx\"",
     "prettier:fix": "prettier --write \"**/*.ts\" \"**/*.tsx\"",
     "check-types": "tsc --noemit",
     "preview": "vite preview",
+    "commitlint": "commitlint",
     "prepare": "node checkHusky.js"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "pnpm eslint:check",
-      "pnpm prettier:check"
+      "pnpm exec eslint --fix",
+      "pnpm exec prettier --write"
     ]
   },
   "dependencies": {

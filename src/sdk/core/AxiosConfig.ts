@@ -21,10 +21,14 @@ const logout = () => {
 let refreshPromise: Promise<string> | null = null
 
 const refreshAccessToken = (origin: string): Promise<string> => {
-  if (refreshPromise) return refreshPromise
+  if (refreshPromise) {
+    return refreshPromise
+  }
   refreshPromise = (async () => {
     const refreshToken = sdkSettings.refreshToken
-    if (!refreshToken) throw new Error('No refresh token available')
+    if (!refreshToken) {
+      throw new Error('No refresh token available')
+    }
     const { data } = await axios.post<SessionResponse>(
       `${origin}/api/auth/refresh`,
       { refreshToken }
@@ -45,7 +49,9 @@ const handleUnauthorized = async (
   instance: AxiosInstance
 ) => {
   const originalRequest = error.config!
-  if (originalRequest.isRetryAfterRefresh) return Promise.reject(error)
+  if (originalRequest.isRetryAfterRefresh) {
+    return Promise.reject(error)
+  }
   originalRequest.isRetryAfterRefresh = true
   try {
     const newToken = await refreshAccessToken(origin)
@@ -75,7 +81,9 @@ const handleForbidden = (error: AxiosError) => {
 const attachRequestInterceptor = (instance: AxiosInstance) => {
   instance.interceptors.request.use((config) => {
     const token = sdkSettings.token
-    if (token) config.headers.Authorization = `Bearer ${token}`
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
 
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type']
@@ -90,8 +98,12 @@ const attachResponseInterceptor = (instance: AxiosInstance, origin: string) => {
     (response) => response,
     (error: AxiosError) => {
       const status = error.response?.status
-      if (status === 401) return handleUnauthorized(error, origin, instance)
-      if (status === 403) return handleForbidden(error)
+      if (status === 401) {
+        return handleUnauthorized(error, origin, instance)
+      }
+      if (status === 403) {
+        return handleForbidden(error)
+      }
       return Promise.reject(error)
     }
   )

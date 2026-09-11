@@ -70,7 +70,9 @@ export default function RolesList() {
   }
 
   const confirmDelete = async () => {
-    if (!roleToDelete) return
+    if (!roleToDelete) {
+      return
+    }
     await crud.delete({ id: roleToDelete.id! })
     setRoleToDelete(null)
   }

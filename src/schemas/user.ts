@@ -19,7 +19,11 @@ export function validatePasswordRequiredOnCreate(
   isEditing: boolean,
   password?: string
 ): string | null {
-  if (isEditing) return null
-  if (!password) return 'La contraseña es obligatoria.'
+  if (isEditing) {
+    return null
+  }
+  if (!password) {
+    return 'La contraseña es obligatoria.'
+  }
   return null
 }

@@ -51,7 +51,9 @@ export function Table<T extends BaseEntity>({
   onPageChange,
 }: TableProps<T>) {
   const getRowKey = (record: T, index: number): string | number => {
-    if (typeof rowKey === 'function') return rowKey(record)
+    if (typeof rowKey === 'function') {
+      return rowKey(record)
+    }
     const value = (record as Record<string, unknown>)[rowKey]
     return (value as string | number) ?? index
   }
@@ -67,8 +69,10 @@ export function Table<T extends BaseEntity>({
     index: number
   ): ReactNode => {
     const value = cellValue(column, record)
-    if (column.render) return column.render(value, record, index)
-    return value == null ? '' : String(value)
+    if (column.render) {
+      return column.render(value, record, index)
+    }
+    return value === null || value === undefined ? '' : String(value)
   }
 
   return (
